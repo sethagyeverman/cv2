@@ -1,0 +1,14 @@
+syntax = "v1"
+
+import "resume.api"
+import "postion.api"
+
+@server (
+	middleware: Auth
+)
+service cv2 {
+	@doc "Position options"
+	@handler Options
+	get /api/positions/options returns (OptionsResp)
+}
+
