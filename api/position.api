@@ -1,1 +1,19 @@
 syntax = "v1"
+
+type (
+    OptionsResp {
+        Count int64 `json:"count"`
+        Data  string `json:"data"`
+    }
+)
+
+@server (
+	group:      "position"
+	middleware: Auth
+)
+service cv2 {
+	@doc "Position options"
+	@handler Options
+	get /api/positions/options returns (OptionsResp)
+}
+

@@ -5,3 +5,14 @@ Port: 8888
 Storages:
   Driver: mysql
   DSN: root:rootpassword@tcp(192.168.1.35:3306)/cv2?charset=utf8mb4&parseTime=True&loc=Local
+
+Mongo:
+  URI: mongodb://localhost:27017
+  Database: cv2
+
+MinIO:
+  Endpoint: localhost:9000
+  AccessKeyID: minioadmin
+  SecretAccessKey: minioadmin
+  UseSSL: false
+  BucketName: cv2-resumes

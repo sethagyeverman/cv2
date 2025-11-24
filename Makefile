@@ -14,6 +14,10 @@ generate:
 run:
 	go run .
 
+.PHONY: build
+build:
+	go build -o bin/cv2 .
+
 .PHONY: help
 help:
 	@echo "Available targets:"

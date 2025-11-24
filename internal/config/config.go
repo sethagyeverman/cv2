@@ -8,4 +8,15 @@ type Config struct {
 		Driver string
 		DSN    string
 	}
+	Mongo struct {
+		URI      string
+		Database string
+	}
+	MinIO struct {
+		Endpoint        string
+		AccessKeyID     string
+		SecretAccessKey string
+		UseSSL          bool
+		BucketName      string
+	}
 }
