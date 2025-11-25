@@ -140,6 +140,12 @@ func (_u *ResumeUpdate) SetNillableDeletedAt(v *time.Time) *ResumeUpdate {
 	return _u
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *ResumeUpdate) ClearDeletedAt() *ResumeUpdate {
+	_u.mutation.ClearDeletedAt()
+	return _u
+}
+
 // AddScoreIDs adds the "scores" edge to the ResumeScore entity by IDs.
 func (_u *ResumeUpdate) AddScoreIDs(ids ...int64) *ResumeUpdate {
 	_u.mutation.AddScoreIDs(ids...)
@@ -273,6 +279,9 @@ func (_u *ResumeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(resume.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(resume.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.ScoresCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -450,6 +459,12 @@ func (_u *ResumeUpdateOne) SetNillableDeletedAt(v *time.Time) *ResumeUpdateOne {
 	return _u
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *ResumeUpdateOne) ClearDeletedAt() *ResumeUpdateOne {
+	_u.mutation.ClearDeletedAt()
+	return _u
+}
+
 // AddScoreIDs adds the "scores" edge to the ResumeScore entity by IDs.
 func (_u *ResumeUpdateOne) AddScoreIDs(ids ...int64) *ResumeUpdateOne {
 	_u.mutation.AddScoreIDs(ids...)
@@ -613,6 +628,9 @@ func (_u *ResumeUpdateOne) sqlSave(ctx context.Context) (_node *Resume, err erro
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(resume.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(resume.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.ScoresCleared() {
 		edge := &sqlgraph.EdgeSpec{

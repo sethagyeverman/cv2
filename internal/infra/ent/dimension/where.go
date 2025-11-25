@@ -60,6 +60,11 @@ func ModuleID(v int64) predicate.Dimension {
 	return predicate.Dimension(sql.FieldEQ(FieldModuleID, v))
 }
 
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldEQ(FieldDescription, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Dimension {
 	return predicate.Dimension(sql.FieldEQ(FieldTitle, v))
@@ -98,6 +103,71 @@ func ModuleIDIn(vs ...int64) predicate.Dimension {
 // ModuleIDNotIn applies the NotIn predicate on the "module_id" field.
 func ModuleIDNotIn(vs ...int64) predicate.Dimension {
 	return predicate.Dimension(sql.FieldNotIn(FieldModuleID, vs...))
+}
+
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldEQ(FieldDescription, v))
+}
+
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldNEQ(FieldDescription, v))
+}
+
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldIn(FieldDescription, vs...))
+}
+
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldNotIn(FieldDescription, vs...))
+}
+
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldGT(FieldDescription, v))
+}
+
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldGTE(FieldDescription, v))
+}
+
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldLT(FieldDescription, v))
+}
+
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldLTE(FieldDescription, v))
+}
+
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldContains(FieldDescription, v))
+}
+
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldHasPrefix(FieldDescription, v))
+}
+
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldHasSuffix(FieldDescription, v))
+}
+
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldEqualFold(FieldDescription, v))
+}
+
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Dimension {
+	return predicate.Dimension(sql.FieldContainsFold(FieldDescription, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -293,6 +363,16 @@ func DeletedAtLT(v time.Time) predicate.Dimension {
 // DeletedAtLTE applies the LTE predicate on the "deleted_at" field.
 func DeletedAtLTE(v time.Time) predicate.Dimension {
 	return predicate.Dimension(sql.FieldLTE(FieldDeletedAt, v))
+}
+
+// DeletedAtIsNil applies the IsNil predicate on the "deleted_at" field.
+func DeletedAtIsNil() predicate.Dimension {
+	return predicate.Dimension(sql.FieldIsNull(FieldDeletedAt))
+}
+
+// DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
+func DeletedAtNotNil() predicate.Dimension {
+	return predicate.Dimension(sql.FieldNotNull(FieldDeletedAt))
 }
 
 // HasModule applies the HasEdge predicate on the "module" edge.

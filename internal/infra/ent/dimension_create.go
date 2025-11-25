@@ -27,6 +27,12 @@ func (_c *DimensionCreate) SetModuleID(v int64) *DimensionCreate {
 	return _c
 }
 
+// SetDescription sets the "description" field.
+func (_c *DimensionCreate) SetDescription(v string) *DimensionCreate {
+	_c.mutation.SetDescription(v)
+	return _c
+}
+
 // SetTitle sets the "title" field.
 func (_c *DimensionCreate) SetTitle(v string) *DimensionCreate {
 	_c.mutation.SetTitle(v)
@@ -143,10 +149,6 @@ func (_c *DimensionCreate) defaults() {
 		v := dimension.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.DeletedAt(); !ok {
-		v := dimension.DefaultDeletedAt
-		_c.mutation.SetDeletedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := dimension.DefaultID()
 		_c.mutation.SetID(v)
@@ -157,6 +159,9 @@ func (_c *DimensionCreate) defaults() {
 func (_c *DimensionCreate) check() error {
 	if _, ok := _c.mutation.ModuleID(); !ok {
 		return &ValidationError{Name: "module_id", err: errors.New(`ent: missing required field "Dimension.module_id"`)}
+	}
+	if _, ok := _c.mutation.Description(); !ok {
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Dimension.description"`)}
 	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Dimension.title"`)}
@@ -171,9 +176,6 @@ func (_c *DimensionCreate) check() error {
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Dimension.updated_at"`)}
-	}
-	if _, ok := _c.mutation.DeletedAt(); !ok {
-		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "Dimension.deleted_at"`)}
 	}
 	if len(_c.mutation.ModuleIDs()) == 0 {
 		return &ValidationError{Name: "module", err: errors.New(`ent: missing required edge "Dimension.module"`)}
@@ -210,6 +212,10 @@ func (_c *DimensionCreate) createSpec() (*Dimension, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
+	if value, ok := _c.mutation.Description(); ok {
+		_spec.SetField(dimension.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(dimension.FieldTitle, field.TypeString, value)
 		_node.Title = value
@@ -228,7 +234,7 @@ func (_c *DimensionCreate) createSpec() (*Dimension, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(dimension.FieldDeletedAt, field.TypeTime, value)
-		_node.DeletedAt = value
+		_node.DeletedAt = &value
 	}
 	if nodes := _c.mutation.ModuleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

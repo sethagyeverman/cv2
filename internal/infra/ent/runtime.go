@@ -19,23 +19,19 @@ func init() {
 	dimensionFields := schema.Dimension{}.Fields()
 	_ = dimensionFields
 	// dimensionDescTitle is the schema descriptor for title field.
-	dimensionDescTitle := dimensionFields[2].Descriptor()
+	dimensionDescTitle := dimensionFields[3].Descriptor()
 	// dimension.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	dimension.TitleValidator = dimensionDescTitle.Validators[0].(func(string) error)
 	// dimensionDescCreatedAt is the schema descriptor for created_at field.
-	dimensionDescCreatedAt := dimensionFields[4].Descriptor()
+	dimensionDescCreatedAt := dimensionFields[5].Descriptor()
 	// dimension.DefaultCreatedAt holds the default value on creation for the created_at field.
 	dimension.DefaultCreatedAt = dimensionDescCreatedAt.Default.(func() time.Time)
 	// dimensionDescUpdatedAt is the schema descriptor for updated_at field.
-	dimensionDescUpdatedAt := dimensionFields[5].Descriptor()
+	dimensionDescUpdatedAt := dimensionFields[6].Descriptor()
 	// dimension.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	dimension.DefaultUpdatedAt = dimensionDescUpdatedAt.Default.(func() time.Time)
 	// dimension.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	dimension.UpdateDefaultUpdatedAt = dimensionDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// dimensionDescDeletedAt is the schema descriptor for deleted_at field.
-	dimensionDescDeletedAt := dimensionFields[6].Descriptor()
-	// dimension.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	dimension.DefaultDeletedAt = dimensionDescDeletedAt.Default.(time.Time)
 	// dimensionDescID is the schema descriptor for id field.
 	dimensionDescID := dimensionFields[0].Descriptor()
 	// dimension.DefaultID holds the default value on creation for the id field.
@@ -60,10 +56,6 @@ func init() {
 	module.DefaultUpdatedAt = moduleDescUpdatedAt.Default.(func() time.Time)
 	// module.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	module.UpdateDefaultUpdatedAt = moduleDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// moduleDescDeletedAt is the schema descriptor for deleted_at field.
-	moduleDescDeletedAt := moduleFields[5].Descriptor()
-	// module.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	module.DefaultDeletedAt = moduleDescDeletedAt.Default.(time.Time)
 	// moduleDescID is the schema descriptor for id field.
 	moduleDescID := moduleFields[0].Descriptor()
 	// module.DefaultID holds the default value on creation for the id field.
@@ -106,10 +98,6 @@ func init() {
 	resume.DefaultUpdatedAt = resumeDescUpdatedAt.Default.(func() time.Time)
 	// resume.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	resume.UpdateDefaultUpdatedAt = resumeDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// resumeDescDeletedAt is the schema descriptor for deleted_at field.
-	resumeDescDeletedAt := resumeFields[8].Descriptor()
-	// resume.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	resume.DefaultDeletedAt = resumeDescDeletedAt.Default.(time.Time)
 	// resumeDescID is the schema descriptor for id field.
 	resumeDescID := resumeFields[0].Descriptor()
 	// resume.DefaultID holds the default value on creation for the id field.
@@ -134,10 +122,6 @@ func init() {
 	resumescore.DefaultUpdatedAt = resumescoreDescUpdatedAt.Default.(func() time.Time)
 	// resumescore.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	resumescore.UpdateDefaultUpdatedAt = resumescoreDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// resumescoreDescDeletedAt is the schema descriptor for deleted_at field.
-	resumescoreDescDeletedAt := resumescoreFields[8].Descriptor()
-	// resumescore.DefaultDeletedAt holds the default value on creation for the deleted_at field.
-	resumescore.DefaultDeletedAt = resumescoreDescDeletedAt.Default.(time.Time)
 	// resumescoreDescID is the schema descriptor for id field.
 	resumescoreDescID := resumescoreFields[0].Descriptor()
 	// resumescore.DefaultID holds the default value on creation for the id field.

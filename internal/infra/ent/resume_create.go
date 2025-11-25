@@ -177,10 +177,6 @@ func (_c *ResumeCreate) defaults() {
 		v := resume.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.DeletedAt(); !ok {
-		v := resume.DefaultDeletedAt
-		_c.mutation.SetDeletedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := resume.DefaultID()
 		_c.mutation.SetID(v)
@@ -219,9 +215,6 @@ func (_c *ResumeCreate) check() error {
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Resume.updated_at"`)}
-	}
-	if _, ok := _c.mutation.DeletedAt(); !ok {
-		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "Resume.deleted_at"`)}
 	}
 	return nil
 }
@@ -285,7 +278,7 @@ func (_c *ResumeCreate) createSpec() (*Resume, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := _c.mutation.DeletedAt(); ok {
 		_spec.SetField(resume.FieldDeletedAt, field.TypeTime, value)
-		_node.DeletedAt = value
+		_node.DeletedAt = &value
 	}
 	if nodes := _c.mutation.ScoresIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

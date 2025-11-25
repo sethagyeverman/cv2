@@ -77,6 +77,12 @@ func (_u *ModuleUpdate) SetNillableDeletedAt(v *time.Time) *ModuleUpdate {
 	return _u
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *ModuleUpdate) ClearDeletedAt() *ModuleUpdate {
+	_u.mutation.ClearDeletedAt()
+	return _u
+}
+
 // AddDimensionIDs adds the "dimensions" edge to the Dimension entity by IDs.
 func (_u *ModuleUpdate) AddDimensionIDs(ids ...int64) *ModuleUpdate {
 	_u.mutation.AddDimensionIDs(ids...)
@@ -188,6 +194,9 @@ func (_u *ModuleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(module.FieldDeletedAt, field.TypeTime, value)
 	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(module.FieldDeletedAt, field.TypeTime)
+	}
 	if _u.mutation.DimensionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -298,6 +307,12 @@ func (_u *ModuleUpdateOne) SetNillableDeletedAt(v *time.Time) *ModuleUpdateOne {
 	if v != nil {
 		_u.SetDeletedAt(*v)
 	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *ModuleUpdateOne) ClearDeletedAt() *ModuleUpdateOne {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -441,6 +456,9 @@ func (_u *ModuleUpdateOne) sqlSave(ctx context.Context) (_node *Module, err erro
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(module.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(module.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.DimensionsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -63,7 +63,8 @@ func (Resume) Fields() []ent.Field {
 			Comment("更新时间"),
 
 		field.Time("deleted_at").
-			Default(time.Time{}).
+			Optional().
+			Nillable().
 			Comment("删除时间"),
 	}
 }

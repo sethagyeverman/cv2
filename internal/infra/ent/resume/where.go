@@ -465,6 +465,16 @@ func DeletedAtLTE(v time.Time) predicate.Resume {
 	return predicate.Resume(sql.FieldLTE(FieldDeletedAt, v))
 }
 
+// DeletedAtIsNil applies the IsNil predicate on the "deleted_at" field.
+func DeletedAtIsNil() predicate.Resume {
+	return predicate.Resume(sql.FieldIsNull(FieldDeletedAt))
+}
+
+// DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
+func DeletedAtNotNil() predicate.Resume {
+	return predicate.Resume(sql.FieldNotNull(FieldDeletedAt))
+}
+
 // HasScores applies the HasEdge predicate on the "scores" edge.
 func HasScores() predicate.Resume {
 	return predicate.Resume(func(s *sql.Selector) {

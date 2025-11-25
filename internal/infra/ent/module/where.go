@@ -330,6 +330,16 @@ func DeletedAtLTE(v time.Time) predicate.Module {
 	return predicate.Module(sql.FieldLTE(FieldDeletedAt, v))
 }
 
+// DeletedAtIsNil applies the IsNil predicate on the "deleted_at" field.
+func DeletedAtIsNil() predicate.Module {
+	return predicate.Module(sql.FieldIsNull(FieldDeletedAt))
+}
+
+// DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
+func DeletedAtNotNil() predicate.Module {
+	return predicate.Module(sql.FieldNotNull(FieldDeletedAt))
+}
+
 // HasDimensions applies the HasEdge predicate on the "dimensions" edge.
 func HasDimensions() predicate.Module {
 	return predicate.Module(func(s *sql.Selector) {

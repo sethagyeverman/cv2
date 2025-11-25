@@ -22,6 +22,8 @@ type Dimension struct {
 	ID int64 `json:"id,omitempty"`
 	// 所属模块ID
 	ModuleID int64 `json:"module_id,omitempty"`
+	// 描述
+	Description string `json:"description,omitempty"`
 	// 显示标题
 	Title string `json:"title,omitempty"`
 	// 维度得分详情（包括detail, score, weight的数组）
@@ -31,7 +33,7 @@ type Dimension struct {
 	// 更新时间
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// 删除时间
-	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DimensionQuery when eager-loading is set.
 	Edges        DimensionEdges `json:"edges"`
@@ -67,7 +69,7 @@ func (*Dimension) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case dimension.FieldID, dimension.FieldModuleID:
 			values[i] = new(sql.NullInt64)
-		case dimension.FieldTitle:
+		case dimension.FieldDescription, dimension.FieldTitle:
 			values[i] = new(sql.NullString)
 		case dimension.FieldCreatedAt, dimension.FieldUpdatedAt, dimension.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -97,6 +99,12 @@ func (_m *Dimension) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field module_id", values[i])
 			} else if value.Valid {
 				_m.ModuleID = value.Int64
+			}
+		case dimension.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				_m.Description = value.String
 			}
 		case dimension.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -128,7 +136,8 @@ func (_m *Dimension) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
-				_m.DeletedAt = value.Time
+				_m.DeletedAt = new(time.Time)
+				*_m.DeletedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -174,6 +183,9 @@ func (_m *Dimension) String() string {
 	builder.WriteString("module_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ModuleID))
 	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(_m.Description)
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
@@ -186,8 +198,10 @@ func (_m *Dimension) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("deleted_at=")
-	builder.WriteString(_m.DeletedAt.Format(time.ANSIC))
+	if v := _m.DeletedAt; v != nil {
+		builder.WriteString("deleted_at=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

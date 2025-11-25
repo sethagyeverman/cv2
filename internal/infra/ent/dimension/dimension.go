@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldModuleID holds the string denoting the module_id field in the database.
 	FieldModuleID = "module_id"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldJudgment holds the string denoting the judgment field in the database.
@@ -43,6 +45,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldModuleID,
+	FieldDescription,
 	FieldTitle,
 	FieldJudgment,
 	FieldCreatedAt,
@@ -69,8 +72,6 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// DefaultDeletedAt holds the default value on creation for the "deleted_at" field.
-	DefaultDeletedAt time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() int64
 )
@@ -86,6 +87,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByModuleID orders the results by the module_id field.
 func ByModuleID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModuleID, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.

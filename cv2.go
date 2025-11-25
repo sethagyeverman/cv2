@@ -13,6 +13,7 @@ import (
 	"cv2/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
@@ -21,6 +22,8 @@ var configFile = flag.String("f", "etc/cv2.yaml", "the config file")
 
 func main() {
 	flag.Parse()
+
+	logx.DisableStat()
 
 	var c config.Config
 	conf.MustLoad(*configFile, &c)

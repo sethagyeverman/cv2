@@ -44,6 +44,20 @@ func (_u *DimensionUpdate) SetNillableModuleID(v *int64) *DimensionUpdate {
 	return _u
 }
 
+// SetDescription sets the "description" field.
+func (_u *DimensionUpdate) SetDescription(v string) *DimensionUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *DimensionUpdate) SetNillableDescription(v *string) *DimensionUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
+	}
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *DimensionUpdate) SetTitle(v string) *DimensionUpdate {
 	_u.mutation.SetTitle(v)
@@ -93,6 +107,12 @@ func (_u *DimensionUpdate) SetNillableDeletedAt(v *time.Time) *DimensionUpdate {
 	if v != nil {
 		_u.SetDeletedAt(*v)
 	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *DimensionUpdate) ClearDeletedAt() *DimensionUpdate {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -173,6 +193,9 @@ func (_u *DimensionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(dimension.FieldDescription, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(dimension.FieldTitle, field.TypeString, value)
 	}
@@ -192,6 +215,9 @@ func (_u *DimensionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(dimension.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(dimension.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.ModuleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -256,6 +282,20 @@ func (_u *DimensionUpdateOne) SetNillableModuleID(v *int64) *DimensionUpdateOne 
 	return _u
 }
 
+// SetDescription sets the "description" field.
+func (_u *DimensionUpdateOne) SetDescription(v string) *DimensionUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (_u *DimensionUpdateOne) SetNillableDescription(v *string) *DimensionUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
+	}
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *DimensionUpdateOne) SetTitle(v string) *DimensionUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -305,6 +345,12 @@ func (_u *DimensionUpdateOne) SetNillableDeletedAt(v *time.Time) *DimensionUpdat
 	if v != nil {
 		_u.SetDeletedAt(*v)
 	}
+	return _u
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *DimensionUpdateOne) ClearDeletedAt() *DimensionUpdateOne {
+	_u.mutation.ClearDeletedAt()
 	return _u
 }
 
@@ -415,6 +461,9 @@ func (_u *DimensionUpdateOne) sqlSave(ctx context.Context) (_node *Dimension, er
 			}
 		}
 	}
+	if value, ok := _u.mutation.Description(); ok {
+		_spec.SetField(dimension.FieldDescription, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(dimension.FieldTitle, field.TypeString, value)
 	}
@@ -434,6 +483,9 @@ func (_u *DimensionUpdateOne) sqlSave(ctx context.Context) (_node *Dimension, er
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(dimension.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(dimension.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.ModuleCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -37,6 +37,9 @@ func (Dimension) Fields() []ent.Field {
 		field.Int64("module_id").
 			Comment("所属模块ID"),
 
+		field.String("description").
+			Comment("描述"),
+
 		field.String("title").
 			NotEmpty().
 			Comment("显示标题"),
@@ -56,7 +59,8 @@ func (Dimension) Fields() []ent.Field {
 			Comment("更新时间"),
 
 		field.Time("deleted_at").
-			Default(time.Time{}).
+			Optional().
+			Nillable().
 			Comment("删除时间"),
 	}
 }

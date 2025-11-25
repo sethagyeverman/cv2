@@ -147,6 +147,12 @@ func (_u *ResumeScoreUpdate) SetNillableDeletedAt(v *time.Time) *ResumeScoreUpda
 	return _u
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *ResumeScoreUpdate) ClearDeletedAt() *ResumeScoreUpdate {
+	_u.mutation.ClearDeletedAt()
+	return _u
+}
+
 // SetResume sets the "resume" edge to the Resume entity.
 func (_u *ResumeScoreUpdate) SetResume(v *Resume) *ResumeScoreUpdate {
 	return _u.SetResumeID(v.ID)
@@ -248,6 +254,9 @@ func (_u *ResumeScoreUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(resumescore.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(resumescore.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.ResumeCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -416,6 +425,12 @@ func (_u *ResumeScoreUpdateOne) SetNillableDeletedAt(v *time.Time) *ResumeScoreU
 	return _u
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (_u *ResumeScoreUpdateOne) ClearDeletedAt() *ResumeScoreUpdateOne {
+	_u.mutation.ClearDeletedAt()
+	return _u
+}
+
 // SetResume sets the "resume" edge to the Resume entity.
 func (_u *ResumeScoreUpdateOne) SetResume(v *Resume) *ResumeScoreUpdateOne {
 	return _u.SetResumeID(v.ID)
@@ -547,6 +562,9 @@ func (_u *ResumeScoreUpdateOne) sqlSave(ctx context.Context) (_node *ResumeScore
 	}
 	if value, ok := _u.mutation.DeletedAt(); ok {
 		_spec.SetField(resumescore.FieldDeletedAt, field.TypeTime, value)
+	}
+	if _u.mutation.DeletedAtCleared() {
+		_spec.ClearField(resumescore.FieldDeletedAt, field.TypeTime)
 	}
 	if _u.mutation.ResumeCleared() {
 		edge := &sqlgraph.EdgeSpec{

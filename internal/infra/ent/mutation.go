@@ -41,6 +41,7 @@ type DimensionMutation struct {
 	op             Op
 	typ            string
 	id             *int64
+	description    *string
 	title          *string
 	judgment       *[]map[string]interface{}
 	appendjudgment []map[string]interface{}
@@ -193,6 +194,42 @@ func (m *DimensionMutation) OldModuleID(ctx context.Context) (v int64, err error
 // ResetModuleID resets all changes to the "module_id" field.
 func (m *DimensionMutation) ResetModuleID() {
 	m.module = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *DimensionMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *DimensionMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Dimension entity.
+// If the Dimension object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DimensionMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *DimensionMutation) ResetDescription() {
+	m.description = nil
 }
 
 // SetTitle sets the "title" field.
@@ -385,7 +422,7 @@ func (m *DimensionMutation) DeletedAt() (r time.Time, exists bool) {
 // OldDeletedAt returns the old "deleted_at" field's value of the Dimension entity.
 // If the Dimension object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DimensionMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+func (m *DimensionMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
 	}
@@ -399,9 +436,22 @@ func (m *DimensionMutation) OldDeletedAt(ctx context.Context) (v time.Time, err 
 	return oldValue.DeletedAt, nil
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *DimensionMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[dimension.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *DimensionMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[dimension.FieldDeletedAt]
+	return ok
+}
+
 // ResetDeletedAt resets all changes to the "deleted_at" field.
 func (m *DimensionMutation) ResetDeletedAt() {
 	m.deleted_at = nil
+	delete(m.clearedFields, dimension.FieldDeletedAt)
 }
 
 // ClearModule clears the "module" edge to the Module entity.
@@ -465,9 +515,12 @@ func (m *DimensionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DimensionMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.module != nil {
 		fields = append(fields, dimension.FieldModuleID)
+	}
+	if m.description != nil {
+		fields = append(fields, dimension.FieldDescription)
 	}
 	if m.title != nil {
 		fields = append(fields, dimension.FieldTitle)
@@ -494,6 +547,8 @@ func (m *DimensionMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case dimension.FieldModuleID:
 		return m.ModuleID()
+	case dimension.FieldDescription:
+		return m.Description()
 	case dimension.FieldTitle:
 		return m.Title()
 	case dimension.FieldJudgment:
@@ -515,6 +570,8 @@ func (m *DimensionMutation) OldField(ctx context.Context, name string) (ent.Valu
 	switch name {
 	case dimension.FieldModuleID:
 		return m.OldModuleID(ctx)
+	case dimension.FieldDescription:
+		return m.OldDescription(ctx)
 	case dimension.FieldTitle:
 		return m.OldTitle(ctx)
 	case dimension.FieldJudgment:
@@ -540,6 +597,13 @@ func (m *DimensionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetModuleID(v)
+		return nil
+	case dimension.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
 		return nil
 	case dimension.FieldTitle:
 		v, ok := value.(string)
@@ -612,6 +676,9 @@ func (m *DimensionMutation) ClearedFields() []string {
 	if m.FieldCleared(dimension.FieldJudgment) {
 		fields = append(fields, dimension.FieldJudgment)
 	}
+	if m.FieldCleared(dimension.FieldDeletedAt) {
+		fields = append(fields, dimension.FieldDeletedAt)
+	}
 	return fields
 }
 
@@ -629,6 +696,9 @@ func (m *DimensionMutation) ClearField(name string) error {
 	case dimension.FieldJudgment:
 		m.ClearJudgment()
 		return nil
+	case dimension.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
 	}
 	return fmt.Errorf("unknown Dimension nullable field %s", name)
 }
@@ -639,6 +709,9 @@ func (m *DimensionMutation) ResetField(name string) error {
 	switch name {
 	case dimension.FieldModuleID:
 		m.ResetModuleID()
+		return nil
+	case dimension.FieldDescription:
+		m.ResetDescription()
 		return nil
 	case dimension.FieldTitle:
 		m.ResetTitle()
@@ -1018,7 +1091,7 @@ func (m *ModuleMutation) DeletedAt() (r time.Time, exists bool) {
 // OldDeletedAt returns the old "deleted_at" field's value of the Module entity.
 // If the Module object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModuleMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+func (m *ModuleMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
 	}
@@ -1032,9 +1105,22 @@ func (m *ModuleMutation) OldDeletedAt(ctx context.Context) (v time.Time, err err
 	return oldValue.DeletedAt, nil
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *ModuleMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[module.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *ModuleMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[module.FieldDeletedAt]
+	return ok
+}
+
 // ResetDeletedAt resets all changes to the "deleted_at" field.
 func (m *ModuleMutation) ResetDeletedAt() {
 	m.deleted_at = nil
+	delete(m.clearedFields, module.FieldDeletedAt)
 }
 
 // AddDimensionIDs adds the "dimensions" edge to the Dimension entity by ids.
@@ -1251,7 +1337,11 @@ func (m *ModuleMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ModuleMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(module.FieldDeletedAt) {
+		fields = append(fields, module.FieldDeletedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1264,6 +1354,11 @@ func (m *ModuleMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ModuleMutation) ClearField(name string) error {
+	switch name {
+	case module.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Module nullable field %s", name)
 }
 
@@ -2470,7 +2565,7 @@ func (m *ResumeMutation) DeletedAt() (r time.Time, exists bool) {
 // OldDeletedAt returns the old "deleted_at" field's value of the Resume entity.
 // If the Resume object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ResumeMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+func (m *ResumeMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
 	}
@@ -2484,9 +2579,22 @@ func (m *ResumeMutation) OldDeletedAt(ctx context.Context) (v time.Time, err err
 	return oldValue.DeletedAt, nil
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *ResumeMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[resume.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *ResumeMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[resume.FieldDeletedAt]
+	return ok
+}
+
 // ResetDeletedAt resets all changes to the "deleted_at" field.
 func (m *ResumeMutation) ResetDeletedAt() {
 	m.deleted_at = nil
+	delete(m.clearedFields, resume.FieldDeletedAt)
 }
 
 // AddScoreIDs adds the "scores" edge to the ResumeScore entity by ids.
@@ -2784,7 +2892,11 @@ func (m *ResumeMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ResumeMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(resume.FieldDeletedAt) {
+		fields = append(fields, resume.FieldDeletedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2797,6 +2909,11 @@ func (m *ResumeMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ResumeMutation) ClearField(name string) error {
+	switch name {
+	case resume.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown Resume nullable field %s", name)
 }
 
@@ -3394,7 +3511,7 @@ func (m *ResumeScoreMutation) DeletedAt() (r time.Time, exists bool) {
 // OldDeletedAt returns the old "deleted_at" field's value of the ResumeScore entity.
 // If the ResumeScore object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ResumeScoreMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+func (m *ResumeScoreMutation) OldDeletedAt(ctx context.Context) (v *time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
 	}
@@ -3408,9 +3525,22 @@ func (m *ResumeScoreMutation) OldDeletedAt(ctx context.Context) (v time.Time, er
 	return oldValue.DeletedAt, nil
 }
 
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *ResumeScoreMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[resumescore.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *ResumeScoreMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[resumescore.FieldDeletedAt]
+	return ok
+}
+
 // ResetDeletedAt resets all changes to the "deleted_at" field.
 func (m *ResumeScoreMutation) ResetDeletedAt() {
 	m.deleted_at = nil
+	delete(m.clearedFields, resumescore.FieldDeletedAt)
 }
 
 // ClearResume clears the "resume" edge to the Resume entity.
@@ -3693,7 +3823,11 @@ func (m *ResumeScoreMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ResumeScoreMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(resumescore.FieldDeletedAt) {
+		fields = append(fields, resumescore.FieldDeletedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3706,6 +3840,11 @@ func (m *ResumeScoreMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ResumeScoreMutation) ClearField(name string) error {
+	switch name {
+	case resumescore.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown ResumeScore nullable field %s", name)
 }
 

@@ -12,11 +12,12 @@ var (
 	// CvDimensionColumns holds the columns for the "cv_dimension" table.
 	CvDimensionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true, Comment: "维度ID"},
+		{Name: "description", Type: field.TypeString, Comment: "描述"},
 		{Name: "title", Type: field.TypeString, Comment: "显示标题"},
 		{Name: "judgment", Type: field.TypeJSON, Nullable: true, Comment: "维度得分详情（包括detail, score, weight的数组）"},
 		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
 		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
-		{Name: "deleted_at", Type: field.TypeTime, Comment: "删除时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
 		{Name: "module_id", Type: field.TypeInt64, Comment: "所属模块ID"},
 	}
 	// CvDimensionTable holds the schema information for the "cv_dimension" table.
@@ -27,7 +28,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "cv_dimension_cv_module_dimensions",
-				Columns:    []*schema.Column{CvDimensionColumns[6]},
+				Columns:    []*schema.Column{CvDimensionColumns[7]},
 				RefColumns: []*schema.Column{CvModuleColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -36,7 +37,7 @@ var (
 			{
 				Name:    "dimension_module_id",
 				Unique:  false,
-				Columns: []*schema.Column{CvDimensionColumns[6]},
+				Columns: []*schema.Column{CvDimensionColumns[7]},
 			},
 		},
 	}
@@ -47,7 +48,7 @@ var (
 		{Name: "description", Type: field.TypeString, Comment: "模块描述", Default: ""},
 		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
 		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
-		{Name: "deleted_at", Type: field.TypeTime, Comment: "删除时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
 	}
 	// CvModuleTable holds the schema information for the "cv_module" table.
 	CvModuleTable = &schema.Table{
@@ -86,7 +87,7 @@ var (
 		{Name: "status", Type: field.TypeInt32, Comment: "状态: 1=pending, 2=processing, 3=completed", Default: 1},
 		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
 		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
-		{Name: "deleted_at", Type: field.TypeTime, Comment: "删除时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
 	}
 	// CvResumeTable holds the schema information for the "cv_resume" table.
 	CvResumeTable = &schema.Table{
@@ -115,7 +116,7 @@ var (
 		{Name: "weight", Type: field.TypeFloat64, Comment: "权重", Default: 0},
 		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
 		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
-		{Name: "deleted_at", Type: field.TypeTime, Comment: "删除时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
 		{Name: "resume_id", Type: field.TypeInt64, Comment: "关联简历ID"},
 	}
 	// CvResumeScoreTable holds the schema information for the "cv_resume_score" table.
