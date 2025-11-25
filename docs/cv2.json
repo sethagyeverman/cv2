@@ -1,8 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "",
-    "version": ""
+    "title": "CV2 API",
+    "description": "简历大师 API",
+    "version": "v2.0.0"
   },
   "host": "localhost:8888",
   "basePath": "/",
@@ -30,12 +31,150 @@
           }
         },
         "tags": [
-          "cv2"
+          "\"position\""
+        ]
+      }
+    },
+    "/api/resume/generate": {
+      "post": {
+        "summary": "生成简历",
+        "operationId": "GenerateResume",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GenerateResumeResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 生成简历请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GenerateResumeReq"
+            }
+          }
+        ],
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/task/{task_id}": {
+      "get": {
+        "summary": "查询生成任务状态",
+        "operationId": "GetTaskStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/TaskStatusResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/upload/policy": {
+      "post": {
+        "summary": "获取简历上传 POST Policy",
+        "operationId": "GetUploadPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UploadPolicyResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " POST Policy 预签名请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UploadPolicyReq"
+            }
+          }
+        ],
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/upload/presign": {
+      "post": {
+        "summary": "获取简历上传预签名 URL",
+        "operationId": "GetUploadPresignURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UploadPresignResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 上传预签名请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UploadPresignReq"
+            }
+          }
+        ],
+        "tags": [
+          "resume"
         ]
       }
     }
   },
   "definitions": {
+    "GenerateResumeReq": {
+      "type": "object",
+      "properties": {
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionAnswer"
+          },
+          "description": " 问题答案列表"
+        }
+      },
+      "title": "GenerateResumeReq",
+      "required": [
+        "questions"
+      ]
+    },
+    "GenerateResumeResp": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "description": " 任务ID"
+        }
+      },
+      "title": "GenerateResumeResp",
+      "required": [
+        "task_id"
+      ]
+    },
     "OptionsResp": {
       "type": "object",
       "properties": {
@@ -51,6 +190,127 @@
       "required": [
         "count",
         "data"
+      ]
+    },
+    "QuestionAnswer": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string",
+          "description": " 问题"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": " 答案列表"
+        }
+      },
+      "title": "QuestionAnswer",
+      "required": [
+        "question",
+        "answers"
+      ]
+    },
+    "TaskStatusReq": {
+      "type": "object",
+      "title": "TaskStatusReq"
+    },
+    "TaskStatusResp": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": " 任务状态: PENDING/PROCESSING/SUCCESS/FAILURE/TIMEOUT"
+        },
+        "resume_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 简历ID（成功时返回）"
+        }
+      },
+      "title": "TaskStatusResp",
+      "required": [
+        "status"
+      ]
+    },
+    "UploadPolicyReq": {
+      "type": "object",
+      "properties": {
+        "file_name": {
+          "type": "string",
+          "description": " 文件名"
+        },
+        "file_type": {
+          "type": "string",
+          "description": " 文件类型"
+        },
+        "max_file_size": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 最大文件大小（字节），可选"
+        }
+      },
+      "title": "UploadPolicyReq",
+      "required": [
+        "file_name",
+        "file_type"
+      ]
+    },
+    "UploadPolicyResp": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": " 预签名数据"
+        }
+      },
+      "title": "UploadPolicyResp",
+      "required": [
+        "data"
+      ]
+    },
+    "UploadPresignReq": {
+      "type": "object",
+      "properties": {
+        "file_name": {
+          "type": "string",
+          "description": " 文件名"
+        },
+        "file_type": {
+          "type": "string",
+          "description": " 文件类型，如: pdf, docx"
+        }
+      },
+      "title": "UploadPresignReq",
+      "required": [
+        "file_name",
+        "file_type"
+      ]
+    },
+    "UploadPresignResp": {
+      "type": "object",
+      "properties": {
+        "upload_url": {
+          "type": "string",
+          "description": " 预签名上传 URL"
+        },
+        "object_key": {
+          "type": "string",
+          "description": " 对象键（文件路径）"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 过期时间（秒）"
+        }
+      },
+      "title": "UploadPresignResp",
+      "required": [
+        "upload_url",
+        "object_key",
+        "expires_in"
       ]
     }
   },

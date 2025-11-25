@@ -87,14 +87,14 @@ func (c *Client) GetTaskStatus(ctx context.Context, taskID string) (*TaskStatus,
 }
 
 // ScoreResume 简历评分
-func (c *Client) ScoreResume(ctx context.Context, req *ScoreRequest) (*ScoreResponse, error) {
+func (c *Client) ScoreResume(ctx context.Context, req *ScoreRequest) ([]*DimScore, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		c.baseURL+"/score/resume", bytes.NewReader(body))
+		c.baseURL+"/resume_eval/section_eval", bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -111,10 +111,22 @@ func (c *Client) ScoreResume(ctx context.Context, req *ScoreRequest) (*ScoreResp
 		return nil, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(body))
 	}
 
-	var result ScoreResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("decode response: %w", err)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response: %w", err)
 	}
 
-	return &result, nil
+	// 尝试直接解析为数组
+	var scores []*DimScore
+	if err := json.Unmarshal(respBody, &scores); err == nil {
+		return scores, nil
+	}
+
+	// 尝试解析包装格式 {code, msg, data}
+	var wrapped ScoreResponse
+	if err := json.Unmarshal(respBody, &wrapped); err == nil {
+		return wrapped.Data, nil
+	}
+
+	return nil, fmt.Errorf("failed to parse response: %s", string(respBody))
 }

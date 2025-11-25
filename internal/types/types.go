@@ -8,7 +8,7 @@ type GenerateResumeReq struct {
 }
 
 type GenerateResumeResp struct {
-	TaskID string `path:"task_id"` // 任务ID
+	TaskID string `json:"task_id"` // 任务ID
 }
 
 type OptionsResp struct {
@@ -22,7 +22,7 @@ type QuestionAnswer struct {
 }
 
 type TaskStatusReq struct {
-	TaskID string `json:"task_id"` // 任务ID
+	TaskID string `path:"task_id"` // 任务ID
 }
 
 type TaskStatusResp struct {
@@ -37,10 +37,7 @@ type UploadPolicyReq struct {
 }
 
 type UploadPolicyResp struct {
-	URL       string            `json:"url"`        // 上传 URL
-	FormData  map[string]string `json:"form_data"`  // 表单数据
-	ObjectKey string            `json:"object_key"` // 对象键
-	ExpiresIn int64             `json:"expires_in"` // 过期时间（秒）
+	Data string `json:"data"` // 预签名数据
 }
 
 type UploadPresignReq struct {

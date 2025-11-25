@@ -79,28 +79,27 @@ type ProjectExp struct {
 	Description string `json:"项目描述"`
 }
 
+// RuleItem 评分规则项
+type RuleItem struct {
+	JudgmentDetail string  `json:"judgment_detail"` // 判定详情
+	JudgmentScore  float64 `json:"judgment_score"`  // 判定分数
+}
+
 // ScoreRequest 评分请求
 type ScoreRequest struct {
-	ResumeID int64       `json:"resume_id"`
-	Data     *ResumeData `json:"data"`
+	Section map[string]interface{} `json:"section"` // 简历模块数据
+	Rules   map[string][]RuleItem  `json:"rules"`   // 维度名 -> 判定项列表
 }
 
-// ScoreResponse 评分响应
+// DimScore 维度得分
+type DimScore struct {
+	Rule  string  `json:"rule"`  // 维度名
+	Score float64 `json:"score"` // 该维度得分
+}
+
+// ScoreResponse 评分响应（兼容多种返回格式）
 type ScoreResponse struct {
-	Scores []ModuleScore `json:"scores"`
-}
-
-// ModuleScore 模块得分
-type ModuleScore struct {
-	ModuleID   int64            `json:"module_id"`
-	Score      float64          `json:"score"`
-	Weight     float64          `json:"weight"`
-	Dimensions []DimensionScore `json:"dimensions,omitempty"`
-}
-
-// DimensionScore 维度得分
-type DimensionScore struct {
-	DimensionID int64   `json:"dimension_id"`
-	Score       float64 `json:"score"`
-	Weight      float64 `json:"weight"`
+	Code int         `json:"code,omitempty"`
+	Msg  string      `json:"msg,omitempty"`
+	Data []*DimScore `json:"data,omitempty"`
 }

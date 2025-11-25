@@ -2,6 +2,7 @@ package resume
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -54,14 +55,22 @@ func (l *GetUploadPolicyLogic) GetUploadPolicy(req *types.UploadPolicyReq) (resp
 		return nil, err
 	}
 
-	// 从 formData 中提取 URL
-	uploadURL := formData["url"]
-	delete(formData, "url") // 移除 URL，只保留表单字段
+	// 构造响应数据
+	data := map[string]interface{}{
+		"url":        formData["url"],
+		"form_data":  formData,
+		"object_key": objectKey,
+		"expires_in": int64(expiresIn.Seconds()),
+	}
+
+	// 序列化为 JSON 字符串
+	dataJSON, err := json.Marshal(data)
+	if err != nil {
+		logx.Errorf("Failed to marshal data: %v", err)
+		return nil, err
+	}
 
 	return &types.UploadPolicyResp{
-		URL:       uploadURL,
-		FormData:  formData,
-		ObjectKey: objectKey,
-		ExpiresIn: int64(expiresIn.Seconds()),
+		Data: string(dataJSON),
 	}, nil
 }

@@ -147,25 +147,13 @@ func (l *GenerateResumeLogic) handleSuccess(
 	}
 
 	// 2. 计算评分
-	scoreResp, err := l.svcCtx.Algorithm.ScoreResume(ctx, &algorithm.ScoreRequest{
-		ResumeID: resumeID,
-		Data:     data,
-	})
-	if err != nil {
-		l.Errorf("score resume failed: %v", err)
-		l.updateRedisStatus(ctx, taskID, statusFailure, 0)
-		return
+	calculator := NewScoreCalculator(ctx, l.svcCtx.Ent, l.svcCtx.Algorithm)
+	if err := calculator.CalculateResumeScore(resumeID, data); err != nil {
+		l.Errorf("calculate resume score failed: %v", err)
+		// 评分失败不影响简历生成，继续执行
 	}
 
-	// 3. 保存评分（事务）
-	err = l.saveScores(ctx, resumeID, scoreResp.Scores)
-	if err != nil {
-		l.Errorf("save scores failed: %v", err)
-		l.updateRedisStatus(ctx, taskID, statusFailure, 0)
-		return
-	}
-
-	// 4. 评分成功后才更新 Redis 为 SUCCESS
+	// 3. 更新 Redis 为 SUCCESS
 	l.updateRedisStatus(ctx, taskID, statusSuccess, resumeID)
 	l.Infof("resume generation completed: task_id=%s, resume_id=%d", taskID, resumeID)
 }
@@ -188,8 +176,8 @@ func (l *GenerateResumeLogic) saveResumeData(
 		SetUserID(userID).
 		SetTenantID(tenantID).
 		SetFileName(data.Name + "-简历").
-		SetFilePath(""). // TODO: 生成文件后更新
-		SetStatus(3).    // completed
+		SetFilePath("fakefakefakefkae"). // TODO: 生成文件后更新
+		SetStatus(3).                    // completed
 		Save(ctx)
 	if err != nil {
 		return errx.Warp(http.StatusInternalServerError, err, "创建简历记录失败")
@@ -202,49 +190,6 @@ func (l *GenerateResumeLogic) saveResumeData(
 	}
 
 	// TODO: 保存到 MinIO（生成PDF文件）
-
-	return tx.Commit()
-}
-
-// saveScores 保存评分（事务）
-func (l *GenerateResumeLogic) saveScores(
-	ctx context.Context,
-	resumeID int64,
-	scores []algorithm.ModuleScore,
-) error {
-	tx, err := l.svcCtx.Ent.Tx(ctx)
-	if err != nil {
-		return errx.Warp(http.StatusInternalServerError, err, "开启事务失败")
-	}
-	defer tx.Rollback()
-
-	for _, score := range scores {
-		// 保存模块得分
-		_, err := tx.ResumeScore.Create().
-			SetResumeID(resumeID).
-			SetTargetID(score.ModuleID).
-			SetTargetType(0). // 0=module
-			SetScore(score.Score).
-			SetWeight(score.Weight).
-			Save(ctx)
-		if err != nil {
-			return errx.Warpf(http.StatusInternalServerError, err, "保存模块得分失败: module_id=%d", score.ModuleID)
-		}
-
-		// 保存维度得分
-		for _, dim := range score.Dimensions {
-			_, err := tx.ResumeScore.Create().
-				SetResumeID(resumeID).
-				SetTargetID(dim.DimensionID).
-				SetTargetType(1). // 1=dimension
-				SetScore(dim.Score).
-				SetWeight(dim.Weight).
-				Save(ctx)
-			if err != nil {
-				return errx.Warpf(http.StatusInternalServerError, err, "保存维度得分失败: dimension_id=%d", dim.DimensionID)
-			}
-		}
-	}
 
 	return tx.Commit()
 }
