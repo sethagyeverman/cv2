@@ -1,3 +1,6 @@
+// Code scaffolded by goctl. Safe to edit.
+// goctl 1.9.2
+
 package resume
 
 import (
@@ -6,21 +9,20 @@ import (
 	"cv2/internal/logic/resume"
 	"cv2/internal/svc"
 	"cv2/internal/types"
-
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-// 获取简历上传 POST Policy
-func GetUploadPolicyHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+// 查询生成任务状态
+func GetTaskStatusHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.UploadPolicyReq
+		var req types.TaskStatusReq
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 			return
 		}
 
-		l := resume.NewGetUploadPolicyLogic(r.Context(), svcCtx)
-		resp, err := l.GetUploadPolicy(&req)
+		l := resume.NewGetTaskStatusLogic(r.Context(), svcCtx)
+		resp, err := l.GetTaskStatus(&req)
 		if err != nil {
 			httpx.ErrorCtx(r.Context(), w, err)
 		} else {

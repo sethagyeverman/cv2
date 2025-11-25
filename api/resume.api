@@ -8,24 +8,50 @@ type UploadPresignReq {
 
 // 上传预签名响应
 type UploadPresignResp {
-	UploadURL string            `json:"upload_url"` // 预签名上传 URL
-	ObjectKey string            `json:"object_key"` // 对象键（文件路径）
-	ExpiresIn int64             `json:"expires_in"` // 过期时间（秒）
+	UploadURL string `json:"upload_url"` // 预签名上传 URL
+	ObjectKey string `json:"object_key"` // 对象键（文件路径）
+	ExpiresIn int64  `json:"expires_in"` // 过期时间（秒）
 }
 
 // POST Policy 预签名请求
 type UploadPolicyReq {
-	FileName    string `json:"file_name"`              // 文件名
-	FileType    string `json:"file_type"`              // 文件类型
+	FileName    string `json:"file_name"` // 文件名
+	FileType    string `json:"file_type"` // 文件类型
 	MaxFileSize int64  `json:"max_file_size,optional"` // 最大文件大小（字节），可选
 }
 
 // POST Policy 预签名响应
 type UploadPolicyResp {
-	URL      string            `json:"url"`       // 上传 URL
-	FormData map[string]string `json:"form_data"` // 表单数据
-	ObjectKey string           `json:"object_key"` // 对象键
-	ExpiresIn int64            `json:"expires_in"` // 过期时间（秒）
+	URL       string            `json:"url"` // 上传 URL
+	FormData  map[string]string `json:"form_data"` // 表单数据
+	ObjectKey string            `json:"object_key"` // 对象键
+	ExpiresIn int64             `json:"expires_in"` // 过期时间（秒）
+}
+
+// 问题答案对
+type QuestionAnswer {
+	Question string   `json:"question"` // 问题
+	Answers  []string `json:"answers"` // 答案列表
+}
+
+// 生成简历请求
+type GenerateResumeReq {
+	Questions []QuestionAnswer `json:"questions"` // 问题答案列表
+}
+
+// 生成简历响应
+type GenerateResumeResp {
+	TaskID string `path:"task_id"` // 任务ID
+}
+
+type TaskStatusReq {
+	TaskID string `json:"task_id"` // 任务ID
+}
+
+// 查询任务状态响应
+type TaskStatusResp {
+	Status   string `json:"status"` // 任务状态: PENDING/PROCESSING/SUCCESS/FAILURE/TIMEOUT
+	ResumeID int64  `json:"resume_id,optional"` // 简历ID（成功时返回）
 }
 
 @server (
@@ -36,8 +62,17 @@ service cv2 {
 	@doc "获取简历上传预签名 URL"
 	@handler GetUploadPresignURL
 	post /api/resume/upload/presign (UploadPresignReq) returns (UploadPresignResp)
-	
+
 	@doc "获取简历上传 POST Policy"
 	@handler GetUploadPolicy
 	post /api/resume/upload/policy (UploadPolicyReq) returns (UploadPolicyResp)
+
+	@doc "生成简历"
+	@handler GenerateResume
+	post /api/resume/generate (GenerateResumeReq) returns (GenerateResumeResp)
+
+	@doc "查询生成任务状态"
+	@handler GetTaskStatus
+	get /api/resume/task/:task_id (TaskStatusReq) returns (TaskStatusResp)
 }
+

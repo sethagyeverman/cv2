@@ -2,7 +2,7 @@ package response
 
 import (
 	"context"
-	"cv2/internal/errx"
+	"cv2/internal/pkg/errx"
 	"errors"
 	"net/http"
 )

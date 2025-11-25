@@ -16,3 +16,6 @@ MinIO:
   SecretAccessKey: minioadmin
   UseSSL: false
   BucketName: cv2
+
+Algorithm:
+  BaseURL: http://36.103.199.91:9117

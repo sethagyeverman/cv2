@@ -1,10 +1,10 @@
 syntax = "v1"
 
 type (
-    OptionsResp {
-        Count int64 `json:"count"`
-        Data  string `json:"data"`
-    }
+	OptionsResp {
+		Count int64  `json:"count"`
+		Data  string `json:"data"`
+	}
 )
 
 @server (

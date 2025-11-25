@@ -19,4 +19,7 @@ type Config struct {
 		UseSSL          bool
 		BucketName      string
 	}
+	Algorithm struct {
+		BaseURL string
+	}
 }

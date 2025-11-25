@@ -4,12 +4,12 @@
 package main
 
 import (
+	"cv2/internal/pkg/response"
 	"flag"
 	"fmt"
 
 	"cv2/internal/config"
 	"cv2/internal/handler"
-	"cv2/internal/response"
 	"cv2/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"

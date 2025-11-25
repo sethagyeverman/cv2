@@ -1,0 +1,10 @@
+syntax = "v1"
+
+info (
+	title:   "CV2 API"
+	desc:    "简历大师 API"
+	version: "v2.0.0"
+)
+
+import "position.api"
+import "resume.api"
