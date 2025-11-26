@@ -1,12 +1,14 @@
 package algorithm
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -133,4 +135,100 @@ func (c *Client) ScoreResume(ctx context.Context, req *ScoreRequest) ([]*DimScor
 	}
 
 	return nil, fmt.Errorf("failed to parse response: %s", string(respBody))
+}
+
+// AIWrite 流式调用 AI 帮写接口，返回数据通道和错误通道
+func (c *Client) AIWrite(ctx context.Context, req *AIWriteRequest) (<-chan string, <-chan error) {
+	dataCh := make(chan string)
+	errCh := make(chan error, 1)
+
+	go func() {
+		defer close(dataCh)
+		defer close(errCh)
+
+		body, err := json.Marshal(req)
+		if err != nil {
+			errCh <- fmt.Errorf("marshal request: %w", err)
+			return
+		}
+
+		// 使用独立的 context 和超时
+		reqCtx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		// 监听外部 context 取消
+		go func() {
+			<-ctx.Done()
+			cancel()
+		}()
+		defer cancel()
+
+		httpReq, err := http.NewRequestWithContext(reqCtx, http.MethodPost,
+			c.generateURL+"/writer/resume_item_gen", bytes.NewReader(body))
+		if err != nil {
+			errCh <- fmt.Errorf("create request: %w", err)
+			return
+		}
+		httpReq.Header.Set("Content-Type", "application/json")
+
+		resp, err := c.httpClient.Do(httpReq)
+		if err != nil {
+			errCh <- fmt.Errorf("do request: %w", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			errCh <- fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(body))
+			return
+		}
+
+		// 解析 SSE 流
+		reader := bufio.NewReader(resp.Body)
+		var eventType string
+		var dataLines []string
+
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				errCh <- fmt.Errorf("read sse: %w", err)
+				return
+			}
+
+			line = strings.TrimRight(line, "\r\n")
+
+			// 空行表示一个事件结束
+			if line == "" {
+				if eventType == "add" && len(dataLines) > 0 {
+					content := strings.Join(dataLines, "\n")
+					select {
+					case dataCh <- content:
+					case <-ctx.Done():
+						return
+					}
+				}
+				if eventType == "end" {
+					return
+				}
+				dataLines = nil
+				continue
+			}
+
+			// 解析 SSE 字段
+			if parts := strings.SplitN(line, ":", 2); len(parts) == 2 {
+				field := strings.TrimSpace(parts[0])
+				value := strings.TrimSpace(parts[1])
+				switch field {
+				case "event":
+					eventType = value
+				case "data":
+					dataLines = append(dataLines, value)
+				}
+			}
+		}
+	}()
+
+	return dataCh, errCh
 }

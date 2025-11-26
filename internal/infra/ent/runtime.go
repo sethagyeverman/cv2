@@ -88,12 +88,16 @@ func init() {
 	resumeDescStatus := resumeFields[5].Descriptor()
 	// resume.DefaultStatus holds the default value on creation for the status field.
 	resume.DefaultStatus = resumeDescStatus.Default.(int32)
+	// resumeDescCoverImage is the schema descriptor for cover_image field.
+	resumeDescCoverImage := resumeFields[6].Descriptor()
+	// resume.DefaultCoverImage holds the default value on creation for the cover_image field.
+	resume.DefaultCoverImage = resumeDescCoverImage.Default.(string)
 	// resumeDescCreatedAt is the schema descriptor for created_at field.
-	resumeDescCreatedAt := resumeFields[6].Descriptor()
+	resumeDescCreatedAt := resumeFields[7].Descriptor()
 	// resume.DefaultCreatedAt holds the default value on creation for the created_at field.
 	resume.DefaultCreatedAt = resumeDescCreatedAt.Default.(func() time.Time)
 	// resumeDescUpdatedAt is the schema descriptor for updated_at field.
-	resumeDescUpdatedAt := resumeFields[7].Descriptor()
+	resumeDescUpdatedAt := resumeFields[8].Descriptor()
 	// resume.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	resume.DefaultUpdatedAt = resumeDescUpdatedAt.Default.(func() time.Time)
 	// resume.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

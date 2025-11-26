@@ -59,6 +59,20 @@ func (_c *ResumeCreate) SetNillableStatus(v *int32) *ResumeCreate {
 	return _c
 }
 
+// SetCoverImage sets the "cover_image" field.
+func (_c *ResumeCreate) SetCoverImage(v string) *ResumeCreate {
+	_c.mutation.SetCoverImage(v)
+	return _c
+}
+
+// SetNillableCoverImage sets the "cover_image" field if the given value is not nil.
+func (_c *ResumeCreate) SetNillableCoverImage(v *string) *ResumeCreate {
+	if v != nil {
+		_c.SetCoverImage(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *ResumeCreate) SetCreatedAt(v time.Time) *ResumeCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -169,6 +183,10 @@ func (_c *ResumeCreate) defaults() {
 		v := resume.DefaultStatus
 		_c.mutation.SetStatus(v)
 	}
+	if _, ok := _c.mutation.CoverImage(); !ok {
+		v := resume.DefaultCoverImage
+		_c.mutation.SetCoverImage(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		v := resume.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
@@ -267,6 +285,10 @@ func (_c *ResumeCreate) createSpec() (*Resume, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(resume.FieldStatus, field.TypeInt32, value)
 		_node.Status = value
+	}
+	if value, ok := _c.mutation.CoverImage(); ok {
+		_spec.SetField(resume.FieldCoverImage, field.TypeString, value)
+		_node.CoverImage = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(resume.FieldCreatedAt, field.TypeTime, value)

@@ -80,6 +80,11 @@ func Status(v int32) predicate.Resume {
 	return predicate.Resume(sql.FieldEQ(FieldStatus, v))
 }
 
+// CoverImage applies equality check predicate on the "cover_image" field. It's identical to CoverImageEQ.
+func CoverImage(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldEQ(FieldCoverImage, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Resume {
 	return predicate.Resume(sql.FieldEQ(FieldCreatedAt, v))
@@ -343,6 +348,81 @@ func StatusLT(v int32) predicate.Resume {
 // StatusLTE applies the LTE predicate on the "status" field.
 func StatusLTE(v int32) predicate.Resume {
 	return predicate.Resume(sql.FieldLTE(FieldStatus, v))
+}
+
+// CoverImageEQ applies the EQ predicate on the "cover_image" field.
+func CoverImageEQ(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldEQ(FieldCoverImage, v))
+}
+
+// CoverImageNEQ applies the NEQ predicate on the "cover_image" field.
+func CoverImageNEQ(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldNEQ(FieldCoverImage, v))
+}
+
+// CoverImageIn applies the In predicate on the "cover_image" field.
+func CoverImageIn(vs ...string) predicate.Resume {
+	return predicate.Resume(sql.FieldIn(FieldCoverImage, vs...))
+}
+
+// CoverImageNotIn applies the NotIn predicate on the "cover_image" field.
+func CoverImageNotIn(vs ...string) predicate.Resume {
+	return predicate.Resume(sql.FieldNotIn(FieldCoverImage, vs...))
+}
+
+// CoverImageGT applies the GT predicate on the "cover_image" field.
+func CoverImageGT(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldGT(FieldCoverImage, v))
+}
+
+// CoverImageGTE applies the GTE predicate on the "cover_image" field.
+func CoverImageGTE(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldGTE(FieldCoverImage, v))
+}
+
+// CoverImageLT applies the LT predicate on the "cover_image" field.
+func CoverImageLT(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldLT(FieldCoverImage, v))
+}
+
+// CoverImageLTE applies the LTE predicate on the "cover_image" field.
+func CoverImageLTE(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldLTE(FieldCoverImage, v))
+}
+
+// CoverImageContains applies the Contains predicate on the "cover_image" field.
+func CoverImageContains(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldContains(FieldCoverImage, v))
+}
+
+// CoverImageHasPrefix applies the HasPrefix predicate on the "cover_image" field.
+func CoverImageHasPrefix(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldHasPrefix(FieldCoverImage, v))
+}
+
+// CoverImageHasSuffix applies the HasSuffix predicate on the "cover_image" field.
+func CoverImageHasSuffix(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldHasSuffix(FieldCoverImage, v))
+}
+
+// CoverImageIsNil applies the IsNil predicate on the "cover_image" field.
+func CoverImageIsNil() predicate.Resume {
+	return predicate.Resume(sql.FieldIsNull(FieldCoverImage))
+}
+
+// CoverImageNotNil applies the NotNil predicate on the "cover_image" field.
+func CoverImageNotNil() predicate.Resume {
+	return predicate.Resume(sql.FieldNotNull(FieldCoverImage))
+}
+
+// CoverImageEqualFold applies the EqualFold predicate on the "cover_image" field.
+func CoverImageEqualFold(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldEqualFold(FieldCoverImage, v))
+}
+
+// CoverImageContainsFold applies the ContainsFold predicate on the "cover_image" field.
+func CoverImageContainsFold(v string) predicate.Resume {
+	return predicate.Resume(sql.FieldContainsFold(FieldCoverImage, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

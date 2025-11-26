@@ -107,6 +107,11 @@ func NewScoreCalculator(ctx context.Context, entClient *ent.Client, algClient *a
 	}
 }
 
+// ScoreSingleModule 对单个模块进行评分（公开方法，供外部调用）
+func (c *ScoreCalculator) ScoreSingleModule(tx *ent.Tx, resumeID int64, moduleName string, moduleData interface{}) error {
+	return c.scoreModule(tx, resumeID, moduleName, moduleData)
+}
+
 // CalculateResumeScore 计算整份简历的评分（在事务中执行）
 func (c *ScoreCalculator) CalculateResumeScore(tx *ent.Tx, resumeID int64, data *algorithm.ResumeData) error {
 	// 定义需要评分的模块
@@ -207,10 +212,25 @@ func (c *ScoreCalculator) saveModuleScores(tx *ent.Tx, resumeID int64, moduleNam
 
 	c.Infof("saved module score: module=%s, score=%.2f", moduleName, moduleScore)
 
+	// 查询模块下的维度，构建维度名到ID的映射
+	dimensions, err := c.entClient.Dimension.Query().
+		Where(dimension.ModuleIDEQ(moduleID)).
+		All(c.ctx)
+	if err != nil {
+		c.Errorf("query dimensions failed: %v", err)
+	}
+	dimNameToID := make(map[string]int64)
+	for _, dim := range dimensions {
+		dimNameToID[dim.Title] = dim.ID
+	}
+
 	// 保存各维度得分（target_type=1 表示维度）
-	for i, score := range scores {
-		// 使用模块ID和维度索引组合生成唯一的维度ID
-		dimensionID := moduleID*100 + int64(i+1)
+	for _, score := range scores {
+		dimensionID, ok := dimNameToID[score.Rule]
+		if !ok {
+			c.Errorf("dimension not found: %s", score.Rule)
+			continue
+		}
 
 		_, err := tx.ResumeScore.Create().
 			SetResumeID(resumeID).

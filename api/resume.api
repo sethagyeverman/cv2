@@ -51,6 +51,61 @@ type TaskStatusResp {
 	ResumeID int64  `json:"resume_id,optional"` // 简历ID（成功时返回）
 }
 
+// AI 帮写请求
+type AIWriteReq {
+	ResumeID int64  `json:"resume_id,string"` // 简历ID
+	ModuleID int64  `json:"module_id,string"` // 模块ID（对应 MongoDB 中的模块项）
+	Info     string `json:"info,optional"`    // 额外提示信息
+}
+
+// 获取简历详情请求
+type GetResumeReq {
+	ResumeID int64 `path:"resume_id"` // 简历ID
+}
+
+// 维度信息（含得分）
+type DimensionInfo {
+	DimensionID int64   `json:"dimension_id,string"` // 维度ID
+	Title       string  `json:"title"`               // 维度标题
+	Score       float64 `json:"score"`               // 得分
+}
+
+// 模块信息（含数据和得分）
+type ModuleInfo {
+	ModuleID   int64                    `json:"module_id,string"` // 模块ID
+	Title      string                   `json:"title"`            // 模块标题
+	Score      float64                  `json:"score"`            // 模块得分
+	Data       []map[string]interface{} `json:"data"`             // 模块数据
+	Dimensions []DimensionInfo          `json:"dimensions"`       // 维度得分列表
+}
+
+// 获取简历详情响应
+type GetResumeResp {
+	ResumeID   int64        `json:"resume_id,string"` // 简历ID
+	FileName   string       `json:"file_name"`        // 文件名
+	Status     int32        `json:"status"`           // 状态
+	TotalScore float64      `json:"total_score"`      // 总分
+	Modules    []ModuleInfo `json:"modules"`          // 模块列表（含数据和得分）
+	CreatedAt  string       `json:"created_at"`       // 创建时间
+	UpdatedAt  string       `json:"updated_at"`       // 更新时间
+}
+
+// 保存模块请求
+type SaveModuleReq {
+	ResumeID int64                  `json:"resume_id,string"` // 简历ID
+	ModuleID int64                  `json:"module_id,string"` // 模块ID
+	Data     []map[string]interface{} `json:"data"`           // 模块数据
+}
+
+// 保存模块响应
+type SaveModuleResp {
+	ModuleID   int64           `json:"module_id,string"` // 模块ID
+	Title      string          `json:"title"`            // 模块标题
+	Score      float64         `json:"score"`            // 模块得分
+	Data       []map[string]interface{} `json:"data"`    // 模块数据
+	Dimensions []DimensionInfo `json:"dimensions"`       // 维度得分列表
+}
+
 @server (
 	group:      resume
 	middleware: Auth
@@ -71,5 +126,23 @@ service cv2 {
 	@doc "查询生成任务状态"
 	@handler GetTaskStatus
 	get /api/resume/task/:task_id (TaskStatusReq) returns (TaskStatusResp)
+
+	@doc "获取简历详情"
+	@handler GetResume
+	get /api/resume/:resume_id (GetResumeReq) returns (GetResumeResp)
+
+	@doc "保存简历模块"
+	@handler SaveModule
+	post /api/resume/module (SaveModuleReq) returns (SaveModuleResp)
 }
 
+@server(
+	group:      resume
+	middleware: Auth
+	sse: true
+)
+service cv2 {
+	@doc "AI 帮写（SSE 流式返回）"
+	@handler AIWrite
+	post /api/resume/ai-write (AIWriteReq) returns (string)
+}

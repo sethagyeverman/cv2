@@ -52,6 +52,11 @@ func (Resume) Fields() []ent.Field {
 			Default(1).
 			Comment("状态: 1=pending, 2=processing, 3=completed"),
 
+		field.String("cover_image").
+			Optional().
+			Default("").
+			Comment("封面图URL"),
+
 		field.Time("created_at").
 			Default(time.Now).
 			Immutable().

@@ -28,6 +28,8 @@ type Resume struct {
 	FileName string `json:"file_name,omitempty"`
 	// 状态: 1=pending, 2=processing, 3=completed
 	Status int32 `json:"status,omitempty"`
+	// 封面图URL
+	CoverImage string `json:"cover_image,omitempty"`
 	// 创建时间
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// 更新时间
@@ -65,7 +67,7 @@ func (*Resume) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case resume.FieldID, resume.FieldUserID, resume.FieldTenantID, resume.FieldStatus:
 			values[i] = new(sql.NullInt64)
-		case resume.FieldFilePath, resume.FieldFileName:
+		case resume.FieldFilePath, resume.FieldFileName, resume.FieldCoverImage:
 			values[i] = new(sql.NullString)
 		case resume.FieldCreatedAt, resume.FieldUpdatedAt, resume.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -119,6 +121,12 @@ func (_m *Resume) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = int32(value.Int64)
+			}
+		case resume.FieldCoverImage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field cover_image", values[i])
+			} else if value.Valid {
+				_m.CoverImage = value.String
 			}
 		case resume.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -194,6 +202,9 @@ func (_m *Resume) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
+	builder.WriteString(", ")
+	builder.WriteString("cover_image=")
+	builder.WriteString(_m.CoverImage)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

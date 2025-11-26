@@ -85,6 +85,7 @@ var (
 		{Name: "file_path", Type: field.TypeString, Comment: "文件路径"},
 		{Name: "file_name", Type: field.TypeString, Comment: "文件名"},
 		{Name: "status", Type: field.TypeInt32, Comment: "状态: 1=pending, 2=processing, 3=completed", Default: 1},
+		{Name: "cover_image", Type: field.TypeString, Nullable: true, Comment: "封面图URL", Default: ""},
 		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
 		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},

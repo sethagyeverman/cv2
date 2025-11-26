@@ -104,6 +104,34 @@
         ]
       }
     },
+    "/api/resume/ai-write": {
+      "post": {
+        "summary": "AI 帮写（SSE 流式返回）",
+        "operationId": "AIWrite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " AI 帮写请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AIWriteReq"
+            }
+          }
+        ],
+        "tags": [
+          "resume"
+        ]
+      }
+    },
     "/api/resume/generate": {
       "post": {
         "summary": "生成简历",
@@ -124,6 +152,34 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/GenerateResumeReq"
+            }
+          }
+        ],
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/module": {
+      "post": {
+        "summary": "保存简历模块",
+        "operationId": "SaveModule",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/SaveModuleResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 保存模块请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SaveModuleReq"
             }
           }
         ],
@@ -212,9 +268,58 @@
           "resume"
         ]
       }
+    },
+    "/api/resume/{resume_id}": {
+      "get": {
+        "summary": "获取简历详情",
+        "operationId": "GetResume",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GetResumeResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resume_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "resume"
+        ]
+      }
     }
   },
   "definitions": {
+    "AIWriteReq": {
+      "type": "object",
+      "properties": {
+        "resume_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 简历ID"
+        },
+        "module_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 模块ID（对应 MongoDB 中的模块项）"
+        },
+        "info": {
+          "type": "string",
+          "description": " 额外提示信息"
+        }
+      },
+      "title": "AIWriteReq",
+      "required": [
+        "resume_id",
+        "module_id"
+      ]
+    },
     "Article": {
       "type": "object",
       "properties": {
@@ -225,21 +330,25 @@
         "title": {
           "type": "string"
         },
+        "subtitle": {
+          "type": "string"
+        },
         "content": {
           "type": "string"
         },
-        "summary": {
-          "type": "string"
-        },
-        "coverImage": {
-          "type": "string"
-        },
-        "author": {
+        "thumbnailUrl": {
           "type": "string"
         },
         "status": {
           "type": "integer",
           "format": "int32"
+        },
+        "viewCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "publishTime": {
+          "type": "string"
         },
         "createTime": {
           "type": "string"
@@ -252,7 +361,33 @@
       "required": [
         "articleId",
         "title",
-        "status"
+        "status",
+        "viewCount"
+      ]
+    },
+    "DimensionInfo": {
+      "type": "object",
+      "properties": {
+        "dimension_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 维度ID"
+        },
+        "title": {
+          "type": "string",
+          "description": " 维度标题"
+        },
+        "score": {
+          "type": "number",
+          "format": "double",
+          "description": " 得分"
+        }
+      },
+      "title": "DimensionInfo",
+      "required": [
+        "dimension_id",
+        "title",
+        "score"
       ]
     },
     "GenerateResumeReq": {
@@ -298,21 +433,25 @@
         "title": {
           "type": "string"
         },
+        "subtitle": {
+          "type": "string"
+        },
         "content": {
           "type": "string"
         },
-        "summary": {
-          "type": "string"
-        },
-        "coverImage": {
-          "type": "string"
-        },
-        "author": {
+        "thumbnailUrl": {
           "type": "string"
         },
         "status": {
           "type": "integer",
           "format": "int32"
+        },
+        "viewCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "publishTime": {
+          "type": "string"
         },
         "createTime": {
           "type": "string"
@@ -322,6 +461,59 @@
         }
       },
       "title": "GetArticleResp"
+    },
+    "GetResumeReq": {
+      "type": "object",
+      "title": "GetResumeReq"
+    },
+    "GetResumeResp": {
+      "type": "object",
+      "properties": {
+        "resume_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 简历ID"
+        },
+        "file_name": {
+          "type": "string",
+          "description": " 文件名"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32",
+          "description": " 状态"
+        },
+        "total_score": {
+          "type": "number",
+          "format": "double",
+          "description": " 总分"
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleInfo"
+          },
+          "description": " 模块列表（含数据和得分）"
+        },
+        "created_at": {
+          "type": "string",
+          "description": " 创建时间"
+        },
+        "updated_at": {
+          "type": "string",
+          "description": " 更新时间"
+        }
+      },
+      "title": "GetResumeResp",
+      "required": [
+        "resume_id",
+        "file_name",
+        "status",
+        "total_score",
+        "modules",
+        "created_at",
+        "updated_at"
+      ]
     },
     "ListArticlesReq": {
       "type": "object",
@@ -366,6 +558,47 @@
         "total"
       ]
     },
+    "ModuleInfo": {
+      "type": "object",
+      "properties": {
+        "module_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 模块ID"
+        },
+        "title": {
+          "type": "string",
+          "description": " 模块标题"
+        },
+        "score": {
+          "type": "number",
+          "format": "double",
+          "description": " 模块得分"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/map[string]interface"
+          },
+          "description": " 模块数据"
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DimensionInfo"
+          },
+          "description": " 维度得分列表"
+        }
+      },
+      "title": "ModuleInfo",
+      "required": [
+        "module_id",
+        "title",
+        "score",
+        "data",
+        "dimensions"
+      ]
+    },
     "OptionsResp": {
       "type": "object",
       "properties": {
@@ -402,6 +635,75 @@
       "required": [
         "question",
         "answers"
+      ]
+    },
+    "SaveModuleReq": {
+      "type": "object",
+      "properties": {
+        "resume_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 简历ID"
+        },
+        "module_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 模块ID"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/map[string]interface"
+          },
+          "description": " 模块数据"
+        }
+      },
+      "title": "SaveModuleReq",
+      "required": [
+        "resume_id",
+        "module_id",
+        "data"
+      ]
+    },
+    "SaveModuleResp": {
+      "type": "object",
+      "properties": {
+        "module_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 模块ID"
+        },
+        "title": {
+          "type": "string",
+          "description": " 模块标题"
+        },
+        "score": {
+          "type": "number",
+          "format": "double",
+          "description": " 模块得分"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/map[string]interface"
+          },
+          "description": " 模块数据"
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DimensionInfo"
+          },
+          "description": " 维度得分列表"
+        }
+      },
+      "title": "SaveModuleResp",
+      "required": [
+        "module_id",
+        "title",
+        "score",
+        "data",
+        "dimensions"
       ]
     },
     "TaskStatusReq": {

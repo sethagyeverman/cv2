@@ -2120,6 +2120,7 @@ type ResumeMutation struct {
 	file_name     *string
 	status        *int32
 	addstatus     *int32
+	cover_image   *string
 	created_at    *time.Time
 	updated_at    *time.Time
 	deleted_at    *time.Time
@@ -2476,6 +2477,55 @@ func (m *ResumeMutation) ResetStatus() {
 	m.addstatus = nil
 }
 
+// SetCoverImage sets the "cover_image" field.
+func (m *ResumeMutation) SetCoverImage(s string) {
+	m.cover_image = &s
+}
+
+// CoverImage returns the value of the "cover_image" field in the mutation.
+func (m *ResumeMutation) CoverImage() (r string, exists bool) {
+	v := m.cover_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCoverImage returns the old "cover_image" field's value of the Resume entity.
+// If the Resume object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ResumeMutation) OldCoverImage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCoverImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCoverImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCoverImage: %w", err)
+	}
+	return oldValue.CoverImage, nil
+}
+
+// ClearCoverImage clears the value of the "cover_image" field.
+func (m *ResumeMutation) ClearCoverImage() {
+	m.cover_image = nil
+	m.clearedFields[resume.FieldCoverImage] = struct{}{}
+}
+
+// CoverImageCleared returns if the "cover_image" field was cleared in this mutation.
+func (m *ResumeMutation) CoverImageCleared() bool {
+	_, ok := m.clearedFields[resume.FieldCoverImage]
+	return ok
+}
+
+// ResetCoverImage resets all changes to the "cover_image" field.
+func (m *ResumeMutation) ResetCoverImage() {
+	m.cover_image = nil
+	delete(m.clearedFields, resume.FieldCoverImage)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ResumeMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2685,7 +2735,7 @@ func (m *ResumeMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ResumeMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.user_id != nil {
 		fields = append(fields, resume.FieldUserID)
 	}
@@ -2700,6 +2750,9 @@ func (m *ResumeMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, resume.FieldStatus)
+	}
+	if m.cover_image != nil {
+		fields = append(fields, resume.FieldCoverImage)
 	}
 	if m.created_at != nil {
 		fields = append(fields, resume.FieldCreatedAt)
@@ -2728,6 +2781,8 @@ func (m *ResumeMutation) Field(name string) (ent.Value, bool) {
 		return m.FileName()
 	case resume.FieldStatus:
 		return m.Status()
+	case resume.FieldCoverImage:
+		return m.CoverImage()
 	case resume.FieldCreatedAt:
 		return m.CreatedAt()
 	case resume.FieldUpdatedAt:
@@ -2753,6 +2808,8 @@ func (m *ResumeMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldFileName(ctx)
 	case resume.FieldStatus:
 		return m.OldStatus(ctx)
+	case resume.FieldCoverImage:
+		return m.OldCoverImage(ctx)
 	case resume.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case resume.FieldUpdatedAt:
@@ -2802,6 +2859,13 @@ func (m *ResumeMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case resume.FieldCoverImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCoverImage(v)
 		return nil
 	case resume.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2893,6 +2957,9 @@ func (m *ResumeMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ResumeMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(resume.FieldCoverImage) {
+		fields = append(fields, resume.FieldCoverImage)
+	}
 	if m.FieldCleared(resume.FieldDeletedAt) {
 		fields = append(fields, resume.FieldDeletedAt)
 	}
@@ -2910,6 +2977,9 @@ func (m *ResumeMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ResumeMutation) ClearField(name string) error {
 	switch name {
+	case resume.FieldCoverImage:
+		m.ClearCoverImage()
+		return nil
 	case resume.FieldDeletedAt:
 		m.ClearDeletedAt()
 		return nil
@@ -2935,6 +3005,9 @@ func (m *ResumeMutation) ResetField(name string) error {
 		return nil
 	case resume.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case resume.FieldCoverImage:
+		m.ResetCoverImage()
 		return nil
 	case resume.FieldCreatedAt:
 		m.ResetCreatedAt()

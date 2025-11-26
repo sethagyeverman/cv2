@@ -103,3 +103,10 @@ type ScoreResponse struct {
 	Msg  string      `json:"msg,omitempty"`
 	Data []*DimScore `json:"data,omitempty"`
 }
+
+// AIWriteRequest AI 帮写请求
+type AIWriteRequest struct {
+	Resume      *ResumeData `json:"resume"`
+	Requirement string      `json:"requirement"`
+	Info        string      `json:"info"`
+}

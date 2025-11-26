@@ -174,3 +174,48 @@ func (c *Client) GetResumeContent(ctx context.Context, resumeID int64) (*model.R
 
 	return &result, nil
 }
+
+// UpdateModule 更新简历中的单个模块
+func (c *Client) UpdateModule(ctx context.Context, resumeID, moduleID int64, title string, data []map[string]interface{}) error {
+	collection := c.Database().Collection(resumeContentCollection)
+
+	// 先查询现有内容
+	content, err := c.GetResumeContent(ctx, resumeID)
+	if err != nil {
+		return err
+	}
+	if content == nil {
+		return mongo.ErrNoDocuments
+	}
+
+	// 更新或添加模块
+	found := false
+	for i, mod := range content.Modules {
+		if mod.ModuleID == moduleID {
+			content.Modules[i].Data = data
+			content.Modules[i].Title = title
+			found = true
+			break
+		}
+	}
+	if !found {
+		content.Modules = append(content.Modules, model.ModuleData{
+			ModuleID: moduleID,
+			Title:    title,
+			Data:     data,
+		})
+	}
+
+	// 更新文档
+	_, err = collection.UpdateOne(
+		ctx,
+		bson.M{"mysql_id": resumeID},
+		bson.M{
+			"$set": bson.M{
+				"modules":     content.Modules,
+				"update_time": time.Now(),
+			},
+		},
+	)
+	return err
+}

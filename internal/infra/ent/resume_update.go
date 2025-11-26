@@ -120,6 +120,26 @@ func (_u *ResumeUpdate) AddStatus(v int32) *ResumeUpdate {
 	return _u
 }
 
+// SetCoverImage sets the "cover_image" field.
+func (_u *ResumeUpdate) SetCoverImage(v string) *ResumeUpdate {
+	_u.mutation.SetCoverImage(v)
+	return _u
+}
+
+// SetNillableCoverImage sets the "cover_image" field if the given value is not nil.
+func (_u *ResumeUpdate) SetNillableCoverImage(v *string) *ResumeUpdate {
+	if v != nil {
+		_u.SetCoverImage(*v)
+	}
+	return _u
+}
+
+// ClearCoverImage clears the value of the "cover_image" field.
+func (_u *ResumeUpdate) ClearCoverImage() *ResumeUpdate {
+	_u.mutation.ClearCoverImage()
+	return _u
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *ResumeUpdate) SetUpdatedAt(v time.Time) *ResumeUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -273,6 +293,12 @@ func (_u *ResumeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedStatus(); ok {
 		_spec.AddField(resume.FieldStatus, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.CoverImage(); ok {
+		_spec.SetField(resume.FieldCoverImage, field.TypeString, value)
+	}
+	if _u.mutation.CoverImageCleared() {
+		_spec.ClearField(resume.FieldCoverImage, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(resume.FieldUpdatedAt, field.TypeTime, value)
@@ -436,6 +462,26 @@ func (_u *ResumeUpdateOne) SetNillableStatus(v *int32) *ResumeUpdateOne {
 // AddStatus adds value to the "status" field.
 func (_u *ResumeUpdateOne) AddStatus(v int32) *ResumeUpdateOne {
 	_u.mutation.AddStatus(v)
+	return _u
+}
+
+// SetCoverImage sets the "cover_image" field.
+func (_u *ResumeUpdateOne) SetCoverImage(v string) *ResumeUpdateOne {
+	_u.mutation.SetCoverImage(v)
+	return _u
+}
+
+// SetNillableCoverImage sets the "cover_image" field if the given value is not nil.
+func (_u *ResumeUpdateOne) SetNillableCoverImage(v *string) *ResumeUpdateOne {
+	if v != nil {
+		_u.SetCoverImage(*v)
+	}
+	return _u
+}
+
+// ClearCoverImage clears the value of the "cover_image" field.
+func (_u *ResumeUpdateOne) ClearCoverImage() *ResumeUpdateOne {
+	_u.mutation.ClearCoverImage()
 	return _u
 }
 
@@ -622,6 +668,12 @@ func (_u *ResumeUpdateOne) sqlSave(ctx context.Context) (_node *Resume, err erro
 	}
 	if value, ok := _u.mutation.AddedStatus(); ok {
 		_spec.AddField(resume.FieldStatus, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.CoverImage(); ok {
+		_spec.SetField(resume.FieldCoverImage, field.TypeString, value)
+	}
+	if _u.mutation.CoverImageCleared() {
+		_spec.ClearField(resume.FieldCoverImage, field.TypeString)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(resume.FieldUpdatedAt, field.TypeTime, value)

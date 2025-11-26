@@ -24,6 +24,8 @@ const (
 	FieldFileName = "file_name"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldCoverImage holds the string denoting the cover_image field in the database.
+	FieldCoverImage = "cover_image"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldFilePath,
 	FieldFileName,
 	FieldStatus,
+	FieldCoverImage,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
@@ -73,6 +76,8 @@ var (
 	FileNameValidator func(string) error
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus int32
+	// DefaultCoverImage holds the default value on creation for the "cover_image" field.
+	DefaultCoverImage string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -114,6 +119,11 @@ func ByFileName(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByCoverImage orders the results by the cover_image field.
+func ByCoverImage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCoverImage, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

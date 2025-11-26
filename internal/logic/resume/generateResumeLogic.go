@@ -170,6 +170,7 @@ func (l *GenerateResumeLogic) saveResumeDataWithScore(
 		SetUserID(userID).
 		SetTenantID(tenantID).
 		SetFileName(data.Name + "-简历").
+		SetCoverImage(l.svcCtx.Config.DefaultConfig.DefaultCoverImage).
 		SetFilePath("fakefakefakefkae"). // TODO: 生成文件后更新
 		SetStatus(3).                    // completed
 		Save(ctx)

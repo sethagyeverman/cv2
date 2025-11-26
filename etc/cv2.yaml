@@ -34,3 +34,6 @@ JWT:
 
 Shiji:
   BaseURL: https://www.shiji.morgen-ai.com:7007
+
+DefaultConfig:
+  DefaultCoverImage: http://119.45.61.170:9000/cvmaster/dev/thumbnail/2025/11/1911355638029037562/bcd95ca7-6331-45f2-ba73-7f4062b4ba91_c7a10f05.png

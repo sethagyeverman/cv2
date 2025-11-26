@@ -3,6 +3,12 @@
 
 package types
 
+type AIWriteReq struct {
+	ResumeID int64  `json:"resume_id,string"` // 简历ID
+	ModuleID int64  `json:"module_id,string"` // 模块ID（对应 MongoDB 中的模块项）
+	Info     string `json:"info,optional"`    // 额外提示信息
+}
+
 type Article struct {
 	ArticleId    int64  `json:"articleId,string"`
 	Title        string `json:"title"`
@@ -14,6 +20,12 @@ type Article struct {
 	PublishTime  string `json:"publishTime,optional"`
 	CreateTime   string `json:"createTime,optional"`
 	UpdateTime   string `json:"updateTime,optional"`
+}
+
+type DimensionInfo struct {
+	DimensionID int64   `json:"dimension_id,string"` // 维度ID
+	Title       string  `json:"title"`               // 维度标题
+	Score       float64 `json:"score"`               // 得分
 }
 
 type GenerateResumeReq struct {
@@ -32,6 +44,20 @@ type GetArticleResp struct {
 	Article
 }
 
+type GetResumeReq struct {
+	ResumeID int64 `path:"resume_id"` // 简历ID
+}
+
+type GetResumeResp struct {
+	ResumeID   int64        `json:"resume_id,string"` // 简历ID
+	FileName   string       `json:"file_name"`        // 文件名
+	Status     int32        `json:"status"`           // 状态
+	TotalScore float64      `json:"total_score"`      // 总分
+	Modules    []ModuleInfo `json:"modules"`          // 模块列表（含数据和得分）
+	CreatedAt  string       `json:"created_at"`       // 创建时间
+	UpdatedAt  string       `json:"updated_at"`       // 更新时间
+}
+
 type ListArticlesReq struct {
 	PageNum  int    `form:"pageNum,default=1"`
 	PageSize int    `form:"pageSize,default=10"`
@@ -43,6 +69,14 @@ type ListArticlesResp struct {
 	Total int64     `json:"total"`
 }
 
+type ModuleInfo struct {
+	ModuleID   int64                    `json:"module_id,string"` // 模块ID
+	Title      string                   `json:"title"`            // 模块标题
+	Score      float64                  `json:"score"`            // 模块得分
+	Data       []map[string]interface{} `json:"data"`             // 模块数据
+	Dimensions []DimensionInfo          `json:"dimensions"`       // 维度得分列表
+}
+
 type OptionsResp struct {
 	Count int64  `json:"count"`
 	Data  string `json:"data"`
@@ -51,6 +85,20 @@ type OptionsResp struct {
 type QuestionAnswer struct {
 	Question string   `json:"question"` // 问题
 	Answers  []string `json:"answers"`  // 答案列表
+}
+
+type SaveModuleReq struct {
+	ResumeID int64                    `json:"resume_id,string"` // 简历ID
+	ModuleID int64                    `json:"module_id,string"` // 模块ID
+	Data     []map[string]interface{} `json:"data"`             // 模块数据
+}
+
+type SaveModuleResp struct {
+	ModuleID   int64                    `json:"module_id,string"` // 模块ID
+	Title      string                   `json:"title"`            // 模块标题
+	Score      float64                  `json:"score"`            // 模块得分
+	Data       []map[string]interface{} `json:"data"`             // 模块数据
+	Dimensions []DimensionInfo          `json:"dimensions"`       // 维度得分列表
 }
 
 type TaskStatusReq struct {

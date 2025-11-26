@@ -51,10 +51,22 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.Auth},
 			[]rest.Route{
 				{
+					// 获取简历详情
+					Method:  http.MethodGet,
+					Path:    "/api/resume/:resume_id",
+					Handler: resume.GetResumeHandler(serverCtx),
+				},
+				{
 					// 生成简历
 					Method:  http.MethodPost,
 					Path:    "/api/resume/generate",
 					Handler: resume.GenerateResumeHandler(serverCtx),
+				},
+				{
+					// 保存简历模块
+					Method:  http.MethodPost,
+					Path:    "/api/resume/module",
+					Handler: resume.SaveModuleHandler(serverCtx),
 				},
 				{
 					// 查询生成任务状态
@@ -76,5 +88,20 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 			}...,
 		),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Auth},
+			[]rest.Route{
+				{
+					// AI 帮写（SSE 流式返回）
+					Method:  http.MethodPost,
+					Path:    "/api/resume/ai-write",
+					Handler: resume.AIWriteHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithSSE(),
 	)
 }

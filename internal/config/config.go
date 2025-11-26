@@ -32,4 +32,7 @@ type Config struct {
 	Shiji struct {
 		BaseURL string // 世纪服务器地址
 	}
+	DefaultConfig struct {
+		DefaultCoverImage string // 默认封面图URL
+	}
 }
