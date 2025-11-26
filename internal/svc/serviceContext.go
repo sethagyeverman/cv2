@@ -6,6 +6,7 @@ import (
 	"cv2/internal/infra/ent"
 	"cv2/internal/infra/minio"
 	"cv2/internal/infra/mongo"
+	"cv2/internal/infra/shiji"
 	"cv2/internal/middleware"
 
 	"github.com/redis/go-redis/v9"
@@ -20,6 +21,7 @@ type ServiceContext struct {
 	MinIO     *minio.Client
 	Redis     *redis.Client
 	Algorithm *algorithm.Client
+	Shiji     *shiji.Client
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -39,15 +41,24 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	}
 
 	redisClient := newRedis(c)
-	algClient := algorithm.NewClient(c.Algorithm.BaseURL)
+	algClient := algorithm.NewClient(c.Algorithm.GenerateURL, c.Algorithm.DataURL, c.Algorithm.ScoreURL)
+	shijiClient := shiji.NewClient(c.Shiji.BaseURL)
+
+	// 创建鉴权中间件
+	authMiddleware := middleware.NewAuthMiddleware(
+		c.JWT.SecretKey,
+		c.JWT.TokenRefreshURL,
+		c.JWT.RefreshThreshold,
+	)
 
 	return &ServiceContext{
 		Config:    c,
-		Auth:      middleware.NewAuthMiddleware().Handle,
+		Auth:      authMiddleware.Handle,
 		Ent:       client,
 		Mongo:     mongoClient,
 		MinIO:     minioClient,
 		Redis:     redisClient,
 		Algorithm: algClient,
+		Shiji:     shijiClient,
 	}
 }

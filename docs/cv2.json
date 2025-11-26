@@ -18,6 +18,75 @@
     "application/json"
   ],
   "paths": {
+    "/api/article/list": {
+      "get": {
+        "summary": "获取运营文章列表",
+        "operationId": "ListArticles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ListArticlesResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageNum",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "default": "1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32",
+            "default": "10"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "article"
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ]
+      }
+    },
+    "/api/article/{articleId}": {
+      "get": {
+        "summary": "获取运营文章详情",
+        "operationId": "GetArticle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/GetArticleResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "articleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "article"
+        ]
+      }
+    },
     "/api/positions/options": {
       "get": {
         "summary": "Position options",
@@ -31,7 +100,7 @@
           }
         },
         "tags": [
-          "\"position\""
+          "position"
         ]
       }
     },
@@ -146,6 +215,46 @@
     }
   },
   "definitions": {
+    "Article": {
+      "type": "object",
+      "properties": {
+        "articleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "coverImage": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "updateTime": {
+          "type": "string"
+        }
+      },
+      "title": "Article",
+      "required": [
+        "articleId",
+        "title",
+        "status"
+      ]
+    },
     "GenerateResumeReq": {
       "type": "object",
       "properties": {
@@ -173,6 +282,88 @@
       "title": "GenerateResumeResp",
       "required": [
         "task_id"
+      ]
+    },
+    "GetArticleReq": {
+      "type": "object",
+      "title": "GetArticleReq"
+    },
+    "GetArticleResp": {
+      "type": "object",
+      "properties": {
+        "articleId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "coverImage": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createTime": {
+          "type": "string"
+        },
+        "updateTime": {
+          "type": "string"
+        }
+      },
+      "title": "GetArticleResp"
+    },
+    "ListArticlesReq": {
+      "type": "object",
+      "properties": {
+        "pageNum": {
+          "type": "integer",
+          "format": "int32",
+          "default": "1"
+        },
+        "pageSize": {
+          "type": "integer",
+          "format": "int32",
+          "default": "10"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "title": "ListArticlesReq",
+      "required": [
+        "pageNum",
+        "pageSize"
+      ]
+    },
+    "ListArticlesResp": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Article"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "title": "ListArticlesResp",
+      "required": [
+        "rows",
+        "total"
       ]
     },
     "OptionsResp": {

@@ -7,6 +7,7 @@ import (
 
 	"cv2/internal/infra/algorithm"
 	"cv2/internal/infra/ent"
+	"cv2/internal/infra/ent/dimension"
 	"cv2/internal/pkg/errx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -23,23 +24,66 @@ const (
 	ModuleSelfEval  = "自我评价"
 )
 
-// 评分维度定义（简化版，实际应从配置或数据库读取）
-var defaultScoringRules = map[string][]algorithm.RuleItem{
-	"完整性": {
-		{JudgmentDetail: "信息完整", JudgmentScore: 100},
-		{JudgmentDetail: "信息较完整", JudgmentScore: 80},
-		{JudgmentDetail: "信息不完整", JudgmentScore: 60},
-	},
-	"专业性": {
-		{JudgmentDetail: "专业术语准确", JudgmentScore: 100},
-		{JudgmentDetail: "专业术语较准确", JudgmentScore: 80},
-		{JudgmentDetail: "专业术语不准确", JudgmentScore: 60},
-	},
-	"匹配度": {
-		{JudgmentDetail: "高度匹配", JudgmentScore: 100},
-		{JudgmentDetail: "基本匹配", JudgmentScore: 80},
-		{JudgmentDetail: "匹配度低", JudgmentScore: 60},
-	},
+// getScoringRulesByModuleID 根据模块ID从数据库获取评分规则
+func (c *ScoreCalculator) getScoringRulesByModuleID(moduleID int64) (map[string][]algorithm.RuleItem, error) {
+	// 查询该模块下的所有维度
+	dimensions, err := c.entClient.Dimension.Query().
+		Where(dimension.ModuleIDEQ(moduleID)).
+		All(c.ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("query dimensions failed: %w", err)
+	}
+
+	if len(dimensions) == 0 {
+		c.Infof("no dimensions found for module_id=%d, using default rules", moduleID)
+		return c.getDefaultScoringRules(), nil
+	}
+
+	// 构造评分规则
+	rules := make(map[string][]algorithm.RuleItem)
+	for _, dim := range dimensions {
+		// 从 judgment 字段解析规则项
+		if len(dim.Judgment) == 0 {
+			c.Errorf("dimension %s has no judgment data", dim.Title)
+			continue
+		}
+
+		ruleItems := make([]algorithm.RuleItem, 0, len(dim.Judgment))
+		for _, j := range dim.Judgment {
+			detail, _ := j["detail"].(string)
+			score, _ := j["score"].(float64)
+
+			ruleItems = append(ruleItems, algorithm.RuleItem{
+				JudgmentDetail: detail,
+				JudgmentScore:  score,
+			})
+		}
+
+		if len(ruleItems) > 0 {
+			rules[dim.Title] = ruleItems
+		}
+	}
+
+	c.Infof("loaded %d scoring rules for module_id=%d", len(rules), moduleID)
+	return rules, nil
+}
+
+// getDefaultScoringRules 获取默认评分规则（当数据库中没有配置时使用）
+func (c *ScoreCalculator) getDefaultScoringRules() map[string][]algorithm.RuleItem {
+	// 默认通用评分规则（当数据库中没有配置时使用）
+	return map[string][]algorithm.RuleItem{
+		"内容完整性": {
+			{JudgmentDetail: "内容完整详细", JudgmentScore: 100},
+			{JudgmentDetail: "内容基本完整", JudgmentScore: 80},
+			{JudgmentDetail: "内容不够完整", JudgmentScore: 60},
+		},
+		"内容专业性": {
+			{JudgmentDetail: "专业术语准确，表述规范", JudgmentScore: 100},
+			{JudgmentDetail: "表述基本专业", JudgmentScore: 80},
+			{JudgmentDetail: "表述不够专业", JudgmentScore: 60},
+		},
+	}
 }
 
 // ScoreCalculator 评分计算器
@@ -48,20 +92,23 @@ type ScoreCalculator struct {
 	ctx       context.Context
 	entClient *ent.Client
 	algClient *algorithm.Client
+	// 缓存模块ID到模块名称的映射
+	moduleCache map[int64]string
 }
 
 // NewScoreCalculator 创建评分计算器
 func NewScoreCalculator(ctx context.Context, entClient *ent.Client, algClient *algorithm.Client) *ScoreCalculator {
 	return &ScoreCalculator{
-		Logger:    logx.WithContext(ctx),
-		ctx:       ctx,
-		entClient: entClient,
-		algClient: algClient,
+		Logger:      logx.WithContext(ctx),
+		ctx:         ctx,
+		entClient:   entClient,
+		algClient:   algClient,
+		moduleCache: make(map[int64]string),
 	}
 }
 
-// CalculateResumeScore 计算整份简历的评分
-func (c *ScoreCalculator) CalculateResumeScore(resumeID int64, data *algorithm.ResumeData) error {
+// CalculateResumeScore 计算整份简历的评分（在事务中执行）
+func (c *ScoreCalculator) CalculateResumeScore(tx *ent.Tx, resumeID int64, data *algorithm.ResumeData) error {
 	// 定义需要评分的模块
 	modules := []struct {
 		name string
@@ -76,11 +123,11 @@ func (c *ScoreCalculator) CalculateResumeScore(resumeID int64, data *algorithm.R
 		{ModuleSelfEval, data.SelfEval},
 	}
 
-	// 并发计算每个模块的评分
+	// 计算每个模块的评分
 	for _, module := range modules {
-		if err := c.scoreModule(resumeID, module.name, module.data); err != nil {
+		if err := c.scoreModule(tx, resumeID, module.name, module.data); err != nil {
 			c.Errorf("score module failed: module=%s, error=%v", module.name, err)
-			// 单个模块评分失败不影响其他模块
+			// 单个模块评分失败不影响其他模块，继续执行
 			continue
 		}
 	}
@@ -89,30 +136,49 @@ func (c *ScoreCalculator) CalculateResumeScore(resumeID int64, data *algorithm.R
 }
 
 // scoreModule 对单个模块进行评分
-func (c *ScoreCalculator) scoreModule(resumeID int64, moduleName string, moduleData interface{}) error {
-	// 1. 准备评分请求
+func (c *ScoreCalculator) scoreModule(tx *ent.Tx, resumeID int64, moduleName string, moduleData interface{}) error {
+	// 1. 获取模块ID
+	moduleID := c.getModuleID(moduleName)
+	if moduleID == 0 {
+		c.Errorf("unknown module name: %s, skip scoring", moduleName)
+		return nil
+	}
+
+	// 2. 从数据库获取该模块的评分规则
+	rules, err := c.getScoringRulesByModuleID(moduleID)
+	if err != nil {
+		return fmt.Errorf("get scoring rules failed: %w", err)
+	}
+
+	if len(rules) == 0 {
+		c.Errorf("no scoring rules for module: %s (id=%d)", moduleName, moduleID)
+		return nil
+	}
+
+	// 3. 准备评分请求
 	section := map[string]interface{}{
 		moduleName: moduleData,
 	}
 
 	req := &algorithm.ScoreRequest{
 		Section: section,
-		Rules:   defaultScoringRules,
+		Rules:   rules,
 	}
 
-	// 2. 调用算法服务评分
+	// 4. 调用算法服务评分
 	scores, err := c.algClient.ScoreResume(c.ctx, req)
 	if err != nil {
 		return fmt.Errorf("call algorithm service: %w", err)
 	}
 
-	// 3. 保存评分结果
-	return c.saveModuleScores(resumeID, moduleName, scores)
+	// 4. 保存评分结果
+	return c.saveModuleScores(tx, resumeID, moduleName, scores)
 }
 
-// saveModuleScores 保存模块评分
-func (c *ScoreCalculator) saveModuleScores(resumeID int64, moduleName string, scores []*algorithm.DimScore) error {
+// saveModuleScores 保存模块评分（在事务中执行）
+func (c *ScoreCalculator) saveModuleScores(tx *ent.Tx, resumeID int64, moduleName string, scores []*algorithm.DimScore) error {
 	if len(scores) == 0 {
+		c.Infof("no scores returned for module: %s", moduleName)
 		return nil
 	}
 
@@ -126,30 +192,29 @@ func (c *ScoreCalculator) saveModuleScores(resumeID int64, moduleName string, sc
 
 	moduleScore := totalScore / totalWeight
 
-	// 开启事务
-	tx, err := c.entClient.Tx(c.ctx)
-	if err != nil {
-		return errx.Warp(http.StatusInternalServerError, err, "开启事务失败")
-	}
-	defer tx.Rollback()
-
 	// 保存模块总分（target_type=0 表示模块）
-	_, err = tx.ResumeScore.Create().
+	moduleID := c.getModuleID(moduleName)
+	_, err := tx.ResumeScore.Create().
 		SetResumeID(resumeID).
-		SetTargetID(c.getModuleID(moduleName)).
+		SetTargetID(moduleID).
 		SetTargetType(0).
 		SetScore(moduleScore).
 		SetWeight(1.0).
 		Save(c.ctx)
 	if err != nil {
-		return errx.Warp(http.StatusInternalServerError, err, "保存模块得分失败")
+		return errx.Warpf(http.StatusInternalServerError, err, "保存模块得分失败: module=%s", moduleName)
 	}
+
+	c.Infof("saved module score: module=%s, score=%.2f", moduleName, moduleScore)
 
 	// 保存各维度得分（target_type=1 表示维度）
 	for i, score := range scores {
+		// 使用模块ID和维度索引组合生成唯一的维度ID
+		dimensionID := moduleID*100 + int64(i+1)
+
 		_, err := tx.ResumeScore.Create().
 			SetResumeID(resumeID).
-			SetTargetID(int64(i + 1)). // 维度ID，实际应该从配置获取
+			SetTargetID(dimensionID).
 			SetTargetType(1).
 			SetScore(score.Score).
 			SetWeight(1.0 / totalWeight).
@@ -158,9 +223,10 @@ func (c *ScoreCalculator) saveModuleScores(resumeID int64, moduleName string, sc
 			c.Errorf("save dimension score failed: dimension=%s, error=%v", score.Rule, err)
 			continue
 		}
+		c.Infof("saved dimension score: module=%s, dimension=%s, score=%.2f", moduleName, score.Rule, score.Score)
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 // extractBasicInfo 提取基本信息

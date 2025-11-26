@@ -12,14 +12,18 @@ import (
 
 // Client 算法服务客户端
 type Client struct {
-	baseURL    string
-	httpClient *http.Client
+	generateURL string // 生成服务 URL
+	dataURL     string // 数据服务 URL
+	scoreURL    string // 评分服务 URL
+	httpClient  *http.Client
 }
 
 // NewClient 创建算法客户端
-func NewClient(baseURL string) *Client {
+func NewClient(generateURL, dataURL, scoreURL string) *Client {
 	return &Client{
-		baseURL: baseURL,
+		generateURL: generateURL,
+		dataURL:     dataURL,
+		scoreURL:    scoreURL,
 		httpClient: &http.Client{
 			Timeout: 60 * time.Second,
 		},
@@ -34,7 +38,7 @@ func (c *Client) SubmitGenerateTask(ctx context.Context, req *GenerateRequest) (
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		c.baseURL+"/writer/resume_gen_task", bytes.NewReader(body))
+		c.generateURL+"/writer/resume_gen_task", bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -62,7 +66,7 @@ func (c *Client) SubmitGenerateTask(ctx context.Context, req *GenerateRequest) (
 // GetTaskStatus 查询任务状态
 func (c *Client) GetTaskStatus(ctx context.Context, taskID string) (*TaskStatus, error) {
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet,
-		fmt.Sprintf("%s/writer/resume_gen_task/%s", c.baseURL, taskID), nil)
+		fmt.Sprintf("%s/writer/resume_gen_task/%s", c.generateURL, taskID), nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -94,7 +98,7 @@ func (c *Client) ScoreResume(ctx context.Context, req *ScoreRequest) ([]*DimScor
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost,
-		c.baseURL+"/resume_eval/section_eval", bytes.NewReader(body))
+		c.scoreURL+"/resume_eval/section_eval", bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}

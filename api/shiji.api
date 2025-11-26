@@ -1,0 +1,55 @@
+syntax = "v1"
+
+// 运营文章管理
+
+type (
+    // 文章列表请求
+    ListArticlesReq {
+        PageNum  int    `form:"pageNum,default=1"`
+        PageSize int    `form:"pageSize,default=10"`
+        Title    string `form:"title,optional"`
+    }
+
+    // 文章列表响应
+    ListArticlesResp {
+        Rows  []Article `json:"rows"`
+        Total int64     `json:"total"`
+    }
+
+    // 文章详情
+    Article {
+        ArticleId    int64  `json:"articleId,string"`
+        Title        string `json:"title"`
+        Subtitle     string `json:"subtitle,optional"`
+        Content      string `json:"content,optional"`
+        ThumbnailUrl string `json:"thumbnailUrl,optional"`
+        Status       int    `json:"status,string"`
+        ViewCount    int    `json:"viewCount"`
+        PublishTime  string `json:"publishTime,optional"`
+        CreateTime   string `json:"createTime,optional"`
+        UpdateTime   string `json:"updateTime,optional"`
+    }
+
+    // 文章详情请求
+    GetArticleReq {
+        ArticleId int64 `path:"articleId"`
+    }
+
+    // 文章详情响应
+    GetArticleResp {
+        Article
+    }
+)
+
+@server (
+    group:  article
+)
+service cv2 {
+    @doc "获取运营文章列表"
+    @handler ListArticles
+    get /api/article/list (ListArticlesReq) returns (ListArticlesResp)
+
+    @doc "获取运营文章详情"
+    @handler GetArticle
+    get /api/article/:articleId (GetArticleReq) returns (GetArticleResp)
+}

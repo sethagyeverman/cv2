@@ -138,39 +138,33 @@ func (l *GenerateResumeLogic) handleSuccess(
 	resumeID, userID, tenantID int64,
 	data *algorithm.ResumeData,
 ) {
-	// 1. 保存简历数据（事务）
-	err := l.saveResumeData(ctx, resumeID, userID, tenantID, data)
+	// 1. 开启事务，保存简历数据和评分
+	err := l.saveResumeDataWithScore(ctx, resumeID, userID, tenantID, data)
 	if err != nil {
-		l.Errorf("save resume data failed: %v", err)
+		l.Errorf("save resume data with score failed: %v", err)
 		l.updateRedisStatus(ctx, taskID, statusFailure, 0)
 		return
 	}
 
-	// 2. 计算评分
-	calculator := NewScoreCalculator(ctx, l.svcCtx.Ent, l.svcCtx.Algorithm)
-	if err := calculator.CalculateResumeScore(resumeID, data); err != nil {
-		l.Errorf("calculate resume score failed: %v", err)
-		// 评分失败不影响简历生成，继续执行
-	}
-
-	// 3. 更新 Redis 为 SUCCESS
+	// 2. 更新 Redis 为 SUCCESS
 	l.updateRedisStatus(ctx, taskID, statusSuccess, resumeID)
 	l.Infof("resume generation completed: task_id=%s, resume_id=%d", taskID, resumeID)
 }
 
-// saveResumeData 保存简历数据（事务）
-func (l *GenerateResumeLogic) saveResumeData(
+// saveResumeDataWithScore 保存简历数据和评分（在同一个事务中）
+func (l *GenerateResumeLogic) saveResumeDataWithScore(
 	ctx context.Context,
 	resumeID, userID, tenantID int64,
 	data *algorithm.ResumeData,
 ) error {
+	// 开启事务
 	tx, err := l.svcCtx.Ent.Tx(ctx)
 	if err != nil {
 		return errx.Warp(http.StatusInternalServerError, err, "开启事务失败")
 	}
 	defer tx.Rollback()
 
-	// 创建简历主表
+	// 1. 创建简历主表记录
 	_, err = tx.Resume.Create().
 		SetID(resumeID).
 		SetUserID(userID).
@@ -183,14 +177,23 @@ func (l *GenerateResumeLogic) saveResumeData(
 		return errx.Warp(http.StatusInternalServerError, err, "创建简历记录失败")
 	}
 
-	// 保存到 MongoDB（简历详细内容）
+	// 2. 保存到 MongoDB（简历详细内容）
 	err = l.svcCtx.Mongo.SaveResumeContent(ctx, resumeID, data)
 	if err != nil {
 		return errx.Warp(http.StatusInternalServerError, err, "保存简历内容失败")
 	}
 
-	// TODO: 保存到 MinIO（生成PDF文件）
+	// 3. 计算并保存评分
+	calculator := NewScoreCalculator(ctx, l.svcCtx.Ent, l.svcCtx.Algorithm)
+	if err := calculator.CalculateResumeScore(tx, resumeID, data); err != nil {
+		l.Errorf("calculate resume score failed: %v", err)
+		// 评分失败不影响简历保存，继续提交事务
+		// 可以选择：1. 继续提交（当前方案） 2. 回滚事务
+	}
 
+	// 4. TODO: 保存到 MinIO（生成PDF文件）
+
+	// 提交事务
 	return tx.Commit()
 }
 

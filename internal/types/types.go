@@ -3,12 +3,44 @@
 
 package types
 
+type Article struct {
+	ArticleId    int64  `json:"articleId,string"`
+	Title        string `json:"title"`
+	Subtitle     string `json:"subtitle,optional"`
+	Content      string `json:"content,optional"`
+	ThumbnailUrl string `json:"thumbnailUrl,optional"`
+	Status       int    `json:"status,string"`
+	ViewCount    int    `json:"viewCount"`
+	PublishTime  string `json:"publishTime,optional"`
+	CreateTime   string `json:"createTime,optional"`
+	UpdateTime   string `json:"updateTime,optional"`
+}
+
 type GenerateResumeReq struct {
 	Questions []QuestionAnswer `json:"questions"` // 问题答案列表
 }
 
 type GenerateResumeResp struct {
 	TaskID string `json:"task_id"` // 任务ID
+}
+
+type GetArticleReq struct {
+	ArticleId int64 `path:"articleId"`
+}
+
+type GetArticleResp struct {
+	Article
+}
+
+type ListArticlesReq struct {
+	PageNum  int    `form:"pageNum,default=1"`
+	PageSize int    `form:"pageSize,default=10"`
+	Title    string `form:"title,optional"`
+}
+
+type ListArticlesResp struct {
+	Rows  []Article `json:"rows"`
+	Total int64     `json:"total"`
 }
 
 type OptionsResp struct {

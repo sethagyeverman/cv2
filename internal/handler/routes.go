@@ -6,6 +6,7 @@ package handler
 import (
 	"net/http"
 
+	article "cv2/internal/handler/article"
 	position "cv2/internal/handler/position"
 	resume "cv2/internal/handler/resume"
 	"cv2/internal/svc"
@@ -14,6 +15,23 @@ import (
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				// 获取运营文章详情
+				Method:  http.MethodGet,
+				Path:    "/api/article/:articleId",
+				Handler: article.GetArticleHandler(serverCtx),
+			},
+			{
+				// 获取运营文章列表
+				Method:  http.MethodGet,
+				Path:    "/api/article/list",
+				Handler: article.ListArticlesHandler(serverCtx),
+			},
+		},
+	)
+
 	server.AddRoutes(
 		rest.WithMiddlewares(
 			[]rest.Middleware{serverCtx.Auth},

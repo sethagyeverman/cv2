@@ -8,7 +8,7 @@ type (
 )
 
 @server (
-	group:      "position"
+	group:      position
 	middleware: Auth
 )
 service cv2 {

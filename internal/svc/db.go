@@ -4,6 +4,7 @@ import (
 	"context"
 	"cv2/internal/config"
 	"cv2/internal/infra/ent"
+	"cv2/internal/pkg/metrics"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -15,6 +16,9 @@ func newDB(c config.Config) (*ent.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// 添加 Interceptor 监控
+	client.Intercept(metrics.EntInterceptor())
 
 	// 自动迁移数据库表结构
 	// 如果表不存在，会创建新表

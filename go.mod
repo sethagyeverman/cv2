@@ -6,9 +6,12 @@ require (
 	entgo.io/ent v0.14.5
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-sql-driver/mysql v1.9.0
+	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/minio/minio-go/v7 v7.0.97
+	github.com/prometheus/client_golang v1.21.1
+	github.com/redis/go-redis/v9 v9.17.0
 	github.com/zeromicro/go-zero v1.9.3
 	go.mongodb.org/mongo-driver v1.17.6
 )
@@ -29,7 +32,6 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -50,11 +52,9 @@ require (
 	github.com/openzipkin/zipkin-go v0.4.3 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/prometheus/client_golang v1.21.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/redis/go-redis/v9 v9.17.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect

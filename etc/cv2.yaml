@@ -2,6 +2,11 @@ Name: cv2
 Host: 0.0.0.0
 Port: 8888
 
+Prometheus:
+  Host: 0.0.0.0
+  Port: 9091
+  Path: /metrics
+
 Storages:
   Driver: mysql
   DSN: root:rootpassword@tcp(192.168.1.35:3306)/cv2?charset=utf8mb4&parseTime=True&loc=Local
@@ -18,4 +23,14 @@ MinIO:
   BucketName: cv2
 
 Algorithm:
-  BaseURL: http://36.103.199.91:9117
+  GenerateURL: http://36.103.199.91:9117
+  DataURL: http://36.103.199.91:9116
+  ScoreURL: http://36.103.199.91:9118
+
+JWT:
+  SecretKey: shiji-admin*2025
+  TokenRefreshURL: https://www.shiji.morgen-ai.com:7007/prod-api/auth/refresh
+  RefreshThreshold: 10
+
+Shiji:
+  BaseURL: https://www.shiji.morgen-ai.com:7007
