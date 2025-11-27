@@ -6,6 +6,15 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AIRecord is the predicate function for airecord builders.
+type AIRecord func(*sql.Selector)
+
+// City is the predicate function for city builders.
+type City func(*sql.Selector)
+
+// Dictionary is the predicate function for dictionary builders.
+type Dictionary func(*sql.Selector)
+
 // Dimension is the predicate function for dimension builders.
 type Dimension func(*sql.Selector)
 

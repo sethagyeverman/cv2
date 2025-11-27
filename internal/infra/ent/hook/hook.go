@@ -8,6 +8,42 @@ import (
 	"fmt"
 )
 
+// The AIRecordFunc type is an adapter to allow the use of ordinary
+// function as AIRecord mutator.
+type AIRecordFunc func(context.Context, *ent.AIRecordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AIRecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AIRecordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AIRecordMutation", m)
+}
+
+// The CityFunc type is an adapter to allow the use of ordinary
+// function as City mutator.
+type CityFunc func(context.Context, *ent.CityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CityMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CityMutation", m)
+}
+
+// The DictionaryFunc type is an adapter to allow the use of ordinary
+// function as Dictionary mutator.
+type DictionaryFunc func(context.Context, *ent.DictionaryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DictionaryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DictionaryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DictionaryMutation", m)
+}
+
 // The DimensionFunc type is an adapter to allow the use of ordinary
 // function as Dimension mutator.
 type DimensionFunc func(context.Context, *ent.DimensionMutation) (ent.Value, error)

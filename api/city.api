@@ -1,0 +1,37 @@
+syntax = "v1"
+
+type (
+	CityItem {
+		ID    int64  `json:"id"`
+		Title string `json:"title"`
+	}
+
+	// 获取所有二级城市响应
+	GetLevel2CitiesResp {
+		Cities []CityItem `json:"cities"`
+	}
+
+	// 根据首字母获取城市请求
+	GetCitiesByInitialsReq {
+		Initials string `form:"initials"` // 首字母列表，如: "abc"
+	}
+
+	// 根据首字母获取城市响应
+	GetCitiesByInitialsResp {
+		Data map[string][]CityItem `json:"data"` // key为首字母，value为城市列表
+	}
+)
+
+@server (
+	group:      city
+	middleware: Auth
+)
+service cv2 {
+	@doc "获取所有二级城市"
+	@handler GetLevel2Cities
+	get /api/cities/level2 returns (GetLevel2CitiesResp)
+
+	@doc "根据首字母获取城市"
+	@handler GetCitiesByInitials
+	get /api/cities/by-initials (GetCitiesByInitialsReq) returns (GetCitiesByInitialsResp)
+}

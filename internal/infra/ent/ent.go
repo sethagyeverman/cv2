@@ -4,6 +4,9 @@ package ent
 
 import (
 	"context"
+	"cv2/internal/infra/ent/airecord"
+	"cv2/internal/infra/ent/city"
+	"cv2/internal/infra/ent/dictionary"
 	"cv2/internal/infra/ent/dimension"
 	"cv2/internal/infra/ent/module"
 	"cv2/internal/infra/ent/position"
@@ -78,6 +81,9 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			airecord.Table:    airecord.ValidColumn,
+			city.Table:        city.ValidColumn,
+			dictionary.Table:  dictionary.ValidColumn,
 			dimension.Table:   dimension.ValidColumn,
 			module.Table:      module.ValidColumn,
 			position.Table:    position.ValidColumn,

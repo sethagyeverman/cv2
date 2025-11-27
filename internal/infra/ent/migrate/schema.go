@@ -9,6 +9,89 @@ import (
 )
 
 var (
+	// CvAiRecordColumns holds the columns for the "cv_ai_record" table.
+	CvAiRecordColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true, Comment: "AI优化记录ID"},
+		{Name: "user_id", Type: field.TypeInt64, Comment: "用户ID"},
+		{Name: "tenant_id", Type: field.TypeString, Comment: "租户ID"},
+		{Name: "resume_id", Type: field.TypeInt64, Comment: "简历ID"},
+		{Name: "module_id", Type: field.TypeInt64, Comment: "模块ID"},
+		{Name: "info", Type: field.TypeString, Nullable: true, Size: 2147483647, Comment: "优化信息", Default: ""},
+		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
+	}
+	// CvAiRecordTable holds the schema information for the "cv_ai_record" table.
+	CvAiRecordTable = &schema.Table{
+		Name:       "cv_ai_record",
+		Columns:    CvAiRecordColumns,
+		PrimaryKey: []*schema.Column{CvAiRecordColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "airecord_user_id_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{CvAiRecordColumns[1], CvAiRecordColumns[2]},
+			},
+		},
+	}
+	// CvCityColumns holds the columns for the "cv_city" table.
+	CvCityColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true, Comment: "城市ID"},
+		{Name: "level", Type: field.TypeInt, Comment: "层级: 1=省份, 2=城市, 3=区县"},
+		{Name: "title", Type: field.TypeString, Comment: "城市名称"},
+		{Name: "initial", Type: field.TypeString, Nullable: true, Comment: "首字母", Default: ""},
+		{Name: "is_hot", Type: field.TypeBool, Comment: "是否热门城市", Default: false},
+		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
+		{Name: "parent_id", Type: field.TypeInt64, Nullable: true, Comment: "父级城市ID", Default: 0},
+	}
+	// CvCityTable holds the schema information for the "cv_city" table.
+	CvCityTable = &schema.Table{
+		Name:       "cv_city",
+		Columns:    CvCityColumns,
+		PrimaryKey: []*schema.Column{CvCityColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "cv_city_cv_city_children",
+				Columns:    []*schema.Column{CvCityColumns[7]},
+				RefColumns: []*schema.Column{CvCityColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "city_level",
+				Unique:  false,
+				Columns: []*schema.Column{CvCityColumns[1]},
+			},
+			{
+				Name:    "city_initial",
+				Unique:  false,
+				Columns: []*schema.Column{CvCityColumns[3]},
+			},
+		},
+	}
+	// RmDictionaryColumns holds the columns for the "rm_dictionary" table.
+	RmDictionaryColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true, Comment: "字典ID"},
+		{Name: "title", Type: field.TypeString, Comment: "字典标题"},
+		{Name: "type", Type: field.TypeString, Comment: "字典类型"},
+		{Name: "order", Type: field.TypeInt, Comment: "排序顺序", Default: 0},
+		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
+	}
+	// RmDictionaryTable holds the schema information for the "rm_dictionary" table.
+	RmDictionaryTable = &schema.Table{
+		Name:       "rm_dictionary",
+		Columns:    RmDictionaryColumns,
+		PrimaryKey: []*schema.Column{RmDictionaryColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dictionary_type",
+				Unique:  false,
+				Columns: []*schema.Column{RmDictionaryColumns[2]},
+			},
+		},
+	}
 	// CvDimensionColumns holds the columns for the "cv_dimension" table.
 	CvDimensionColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true, Comment: "维度ID"},
@@ -170,6 +253,9 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CvAiRecordTable,
+		CvCityTable,
+		RmDictionaryTable,
 		CvDimensionTable,
 		CvModuleTable,
 		RmPositionTable,
@@ -180,6 +266,22 @@ var (
 )
 
 func init() {
+	CvAiRecordTable.Annotation = &entsql.Annotation{
+		Table:     "cv_ai_record",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_unicode_ci",
+	}
+	CvCityTable.ForeignKeys[0].RefTable = CvCityTable
+	CvCityTable.Annotation = &entsql.Annotation{
+		Table:     "cv_city",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_unicode_ci",
+	}
+	RmDictionaryTable.Annotation = &entsql.Annotation{
+		Table:     "rm_dictionary",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_unicode_ci",
+	}
 	CvDimensionTable.ForeignKeys[0].RefTable = CvModuleTable
 	CvDimensionTable.Annotation = &entsql.Annotation{
 		Table:     "cv_dimension",

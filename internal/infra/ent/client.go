@@ -11,6 +11,9 @@ import (
 
 	"cv2/internal/infra/ent/migrate"
 
+	"cv2/internal/infra/ent/airecord"
+	"cv2/internal/infra/ent/city"
+	"cv2/internal/infra/ent/dictionary"
 	"cv2/internal/infra/ent/dimension"
 	"cv2/internal/infra/ent/module"
 	"cv2/internal/infra/ent/position"
@@ -29,6 +32,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AIRecord is the client for interacting with the AIRecord builders.
+	AIRecord *AIRecordClient
+	// City is the client for interacting with the City builders.
+	City *CityClient
+	// Dictionary is the client for interacting with the Dictionary builders.
+	Dictionary *DictionaryClient
 	// Dimension is the client for interacting with the Dimension builders.
 	Dimension *DimensionClient
 	// Module is the client for interacting with the Module builders.
@@ -52,6 +61,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AIRecord = NewAIRecordClient(c.config)
+	c.City = NewCityClient(c.config)
+	c.Dictionary = NewDictionaryClient(c.config)
 	c.Dimension = NewDimensionClient(c.config)
 	c.Module = NewModuleClient(c.config)
 	c.Position = NewPositionClient(c.config)
@@ -150,6 +162,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:         ctx,
 		config:      cfg,
+		AIRecord:    NewAIRecordClient(cfg),
+		City:        NewCityClient(cfg),
+		Dictionary:  NewDictionaryClient(cfg),
 		Dimension:   NewDimensionClient(cfg),
 		Module:      NewModuleClient(cfg),
 		Position:    NewPositionClient(cfg),
@@ -175,6 +190,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:         ctx,
 		config:      cfg,
+		AIRecord:    NewAIRecordClient(cfg),
+		City:        NewCityClient(cfg),
+		Dictionary:  NewDictionaryClient(cfg),
 		Dimension:   NewDimensionClient(cfg),
 		Module:      NewModuleClient(cfg),
 		Position:    NewPositionClient(cfg),
@@ -187,7 +205,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Dimension.
+//		AIRecord.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -210,7 +228,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Dimension, c.Module, c.Position, c.Resume, c.ResumeScore, c.ResumeSlot,
+		c.AIRecord, c.City, c.Dictionary, c.Dimension, c.Module, c.Position, c.Resume,
+		c.ResumeScore, c.ResumeSlot,
 	} {
 		n.Use(hooks...)
 	}
@@ -220,7 +239,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Dimension, c.Module, c.Position, c.Resume, c.ResumeScore, c.ResumeSlot,
+		c.AIRecord, c.City, c.Dictionary, c.Dimension, c.Module, c.Position, c.Resume,
+		c.ResumeScore, c.ResumeSlot,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -229,6 +249,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AIRecordMutation:
+		return c.AIRecord.mutate(ctx, m)
+	case *CityMutation:
+		return c.City.mutate(ctx, m)
+	case *DictionaryMutation:
+		return c.Dictionary.mutate(ctx, m)
 	case *DimensionMutation:
 		return c.Dimension.mutate(ctx, m)
 	case *ModuleMutation:
@@ -243,6 +269,437 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ResumeSlot.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AIRecordClient is a client for the AIRecord schema.
+type AIRecordClient struct {
+	config
+}
+
+// NewAIRecordClient returns a client for the AIRecord from the given config.
+func NewAIRecordClient(c config) *AIRecordClient {
+	return &AIRecordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `airecord.Hooks(f(g(h())))`.
+func (c *AIRecordClient) Use(hooks ...Hook) {
+	c.hooks.AIRecord = append(c.hooks.AIRecord, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `airecord.Intercept(f(g(h())))`.
+func (c *AIRecordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AIRecord = append(c.inters.AIRecord, interceptors...)
+}
+
+// Create returns a builder for creating a AIRecord entity.
+func (c *AIRecordClient) Create() *AIRecordCreate {
+	mutation := newAIRecordMutation(c.config, OpCreate)
+	return &AIRecordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AIRecord entities.
+func (c *AIRecordClient) CreateBulk(builders ...*AIRecordCreate) *AIRecordCreateBulk {
+	return &AIRecordCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AIRecordClient) MapCreateBulk(slice any, setFunc func(*AIRecordCreate, int)) *AIRecordCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AIRecordCreateBulk{err: fmt.Errorf("calling to AIRecordClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AIRecordCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AIRecordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AIRecord.
+func (c *AIRecordClient) Update() *AIRecordUpdate {
+	mutation := newAIRecordMutation(c.config, OpUpdate)
+	return &AIRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AIRecordClient) UpdateOne(_m *AIRecord) *AIRecordUpdateOne {
+	mutation := newAIRecordMutation(c.config, OpUpdateOne, withAIRecord(_m))
+	return &AIRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AIRecordClient) UpdateOneID(id int64) *AIRecordUpdateOne {
+	mutation := newAIRecordMutation(c.config, OpUpdateOne, withAIRecordID(id))
+	return &AIRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AIRecord.
+func (c *AIRecordClient) Delete() *AIRecordDelete {
+	mutation := newAIRecordMutation(c.config, OpDelete)
+	return &AIRecordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AIRecordClient) DeleteOne(_m *AIRecord) *AIRecordDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AIRecordClient) DeleteOneID(id int64) *AIRecordDeleteOne {
+	builder := c.Delete().Where(airecord.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AIRecordDeleteOne{builder}
+}
+
+// Query returns a query builder for AIRecord.
+func (c *AIRecordClient) Query() *AIRecordQuery {
+	return &AIRecordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAIRecord},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AIRecord entity by its id.
+func (c *AIRecordClient) Get(ctx context.Context, id int64) (*AIRecord, error) {
+	return c.Query().Where(airecord.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AIRecordClient) GetX(ctx context.Context, id int64) *AIRecord {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AIRecordClient) Hooks() []Hook {
+	return c.hooks.AIRecord
+}
+
+// Interceptors returns the client interceptors.
+func (c *AIRecordClient) Interceptors() []Interceptor {
+	return c.inters.AIRecord
+}
+
+func (c *AIRecordClient) mutate(ctx context.Context, m *AIRecordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AIRecordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AIRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AIRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AIRecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AIRecord mutation op: %q", m.Op())
+	}
+}
+
+// CityClient is a client for the City schema.
+type CityClient struct {
+	config
+}
+
+// NewCityClient returns a client for the City from the given config.
+func NewCityClient(c config) *CityClient {
+	return &CityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `city.Hooks(f(g(h())))`.
+func (c *CityClient) Use(hooks ...Hook) {
+	c.hooks.City = append(c.hooks.City, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `city.Intercept(f(g(h())))`.
+func (c *CityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.City = append(c.inters.City, interceptors...)
+}
+
+// Create returns a builder for creating a City entity.
+func (c *CityClient) Create() *CityCreate {
+	mutation := newCityMutation(c.config, OpCreate)
+	return &CityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of City entities.
+func (c *CityClient) CreateBulk(builders ...*CityCreate) *CityCreateBulk {
+	return &CityCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CityClient) MapCreateBulk(slice any, setFunc func(*CityCreate, int)) *CityCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CityCreateBulk{err: fmt.Errorf("calling to CityClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CityCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for City.
+func (c *CityClient) Update() *CityUpdate {
+	mutation := newCityMutation(c.config, OpUpdate)
+	return &CityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CityClient) UpdateOne(_m *City) *CityUpdateOne {
+	mutation := newCityMutation(c.config, OpUpdateOne, withCity(_m))
+	return &CityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CityClient) UpdateOneID(id int64) *CityUpdateOne {
+	mutation := newCityMutation(c.config, OpUpdateOne, withCityID(id))
+	return &CityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for City.
+func (c *CityClient) Delete() *CityDelete {
+	mutation := newCityMutation(c.config, OpDelete)
+	return &CityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CityClient) DeleteOne(_m *City) *CityDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CityClient) DeleteOneID(id int64) *CityDeleteOne {
+	builder := c.Delete().Where(city.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CityDeleteOne{builder}
+}
+
+// Query returns a query builder for City.
+func (c *CityClient) Query() *CityQuery {
+	return &CityQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCity},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a City entity by its id.
+func (c *CityClient) Get(ctx context.Context, id int64) (*City, error) {
+	return c.Query().Where(city.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CityClient) GetX(ctx context.Context, id int64) *City {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryChildren queries the children edge of a City.
+func (c *CityClient) QueryChildren(_m *City) *CityQuery {
+	query := (&CityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(city.Table, city.FieldID, id),
+			sqlgraph.To(city.Table, city.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, city.ChildrenTable, city.ChildrenColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a City.
+func (c *CityClient) QueryParent(_m *City) *CityQuery {
+	query := (&CityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(city.Table, city.FieldID, id),
+			sqlgraph.To(city.Table, city.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, city.ParentTable, city.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CityClient) Hooks() []Hook {
+	return c.hooks.City
+}
+
+// Interceptors returns the client interceptors.
+func (c *CityClient) Interceptors() []Interceptor {
+	return c.inters.City
+}
+
+func (c *CityClient) mutate(ctx context.Context, m *CityMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown City mutation op: %q", m.Op())
+	}
+}
+
+// DictionaryClient is a client for the Dictionary schema.
+type DictionaryClient struct {
+	config
+}
+
+// NewDictionaryClient returns a client for the Dictionary from the given config.
+func NewDictionaryClient(c config) *DictionaryClient {
+	return &DictionaryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dictionary.Hooks(f(g(h())))`.
+func (c *DictionaryClient) Use(hooks ...Hook) {
+	c.hooks.Dictionary = append(c.hooks.Dictionary, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dictionary.Intercept(f(g(h())))`.
+func (c *DictionaryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Dictionary = append(c.inters.Dictionary, interceptors...)
+}
+
+// Create returns a builder for creating a Dictionary entity.
+func (c *DictionaryClient) Create() *DictionaryCreate {
+	mutation := newDictionaryMutation(c.config, OpCreate)
+	return &DictionaryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Dictionary entities.
+func (c *DictionaryClient) CreateBulk(builders ...*DictionaryCreate) *DictionaryCreateBulk {
+	return &DictionaryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DictionaryClient) MapCreateBulk(slice any, setFunc func(*DictionaryCreate, int)) *DictionaryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DictionaryCreateBulk{err: fmt.Errorf("calling to DictionaryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DictionaryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DictionaryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Dictionary.
+func (c *DictionaryClient) Update() *DictionaryUpdate {
+	mutation := newDictionaryMutation(c.config, OpUpdate)
+	return &DictionaryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DictionaryClient) UpdateOne(_m *Dictionary) *DictionaryUpdateOne {
+	mutation := newDictionaryMutation(c.config, OpUpdateOne, withDictionary(_m))
+	return &DictionaryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DictionaryClient) UpdateOneID(id int64) *DictionaryUpdateOne {
+	mutation := newDictionaryMutation(c.config, OpUpdateOne, withDictionaryID(id))
+	return &DictionaryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Dictionary.
+func (c *DictionaryClient) Delete() *DictionaryDelete {
+	mutation := newDictionaryMutation(c.config, OpDelete)
+	return &DictionaryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DictionaryClient) DeleteOne(_m *Dictionary) *DictionaryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DictionaryClient) DeleteOneID(id int64) *DictionaryDeleteOne {
+	builder := c.Delete().Where(dictionary.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DictionaryDeleteOne{builder}
+}
+
+// Query returns a query builder for Dictionary.
+func (c *DictionaryClient) Query() *DictionaryQuery {
+	return &DictionaryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDictionary},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Dictionary entity by its id.
+func (c *DictionaryClient) Get(ctx context.Context, id int64) (*Dictionary, error) {
+	return c.Query().Where(dictionary.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DictionaryClient) GetX(ctx context.Context, id int64) *Dictionary {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DictionaryClient) Hooks() []Hook {
+	return c.hooks.Dictionary
+}
+
+// Interceptors returns the client interceptors.
+func (c *DictionaryClient) Interceptors() []Interceptor {
+	return c.inters.Dictionary
+}
+
+func (c *DictionaryClient) mutate(ctx context.Context, m *DictionaryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DictionaryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DictionaryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DictionaryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DictionaryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Dictionary mutation op: %q", m.Op())
 	}
 }
 
@@ -1143,9 +1600,11 @@ func (c *ResumeSlotClient) mutate(ctx context.Context, m *ResumeSlotMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Dimension, Module, Position, Resume, ResumeScore, ResumeSlot []ent.Hook
+		AIRecord, City, Dictionary, Dimension, Module, Position, Resume, ResumeScore,
+		ResumeSlot []ent.Hook
 	}
 	inters struct {
-		Dimension, Module, Position, Resume, ResumeScore, ResumeSlot []ent.Interceptor
+		AIRecord, City, Dictionary, Dimension, Module, Position, Resume, ResumeScore,
+		ResumeSlot []ent.Interceptor
 	}
 )

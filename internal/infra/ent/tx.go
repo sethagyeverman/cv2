@@ -12,6 +12,12 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AIRecord is the client for interacting with the AIRecord builders.
+	AIRecord *AIRecordClient
+	// City is the client for interacting with the City builders.
+	City *CityClient
+	// Dictionary is the client for interacting with the Dictionary builders.
+	Dictionary *DictionaryClient
 	// Dimension is the client for interacting with the Dimension builders.
 	Dimension *DimensionClient
 	// Module is the client for interacting with the Module builders.
@@ -155,6 +161,9 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AIRecord = NewAIRecordClient(tx.config)
+	tx.City = NewCityClient(tx.config)
+	tx.Dictionary = NewDictionaryClient(tx.config)
 	tx.Dimension = NewDimensionClient(tx.config)
 	tx.Module = NewModuleClient(tx.config)
 	tx.Position = NewPositionClient(tx.config)
@@ -170,7 +179,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Dimension.QueryXXX(), the query will be executed
+// applies a query, for example: AIRecord.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

@@ -3,6 +3,9 @@
 package ent
 
 import (
+	"cv2/internal/infra/ent/airecord"
+	"cv2/internal/infra/ent/city"
+	"cv2/internal/infra/ent/dictionary"
 	"cv2/internal/infra/ent/dimension"
 	"cv2/internal/infra/ent/module"
 	"cv2/internal/infra/ent/position"
@@ -17,6 +20,86 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	airecordFields := schema.AIRecord{}.Fields()
+	_ = airecordFields
+	// airecordDescInfo is the schema descriptor for info field.
+	airecordDescInfo := airecordFields[5].Descriptor()
+	// airecord.DefaultInfo holds the default value on creation for the info field.
+	airecord.DefaultInfo = airecordDescInfo.Default.(string)
+	// airecordDescCreatedAt is the schema descriptor for created_at field.
+	airecordDescCreatedAt := airecordFields[6].Descriptor()
+	// airecord.DefaultCreatedAt holds the default value on creation for the created_at field.
+	airecord.DefaultCreatedAt = airecordDescCreatedAt.Default.(func() time.Time)
+	// airecordDescUpdatedAt is the schema descriptor for updated_at field.
+	airecordDescUpdatedAt := airecordFields[7].Descriptor()
+	// airecord.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	airecord.DefaultUpdatedAt = airecordDescUpdatedAt.Default.(func() time.Time)
+	// airecord.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	airecord.UpdateDefaultUpdatedAt = airecordDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// airecordDescID is the schema descriptor for id field.
+	airecordDescID := airecordFields[0].Descriptor()
+	// airecord.DefaultID holds the default value on creation for the id field.
+	airecord.DefaultID = airecordDescID.Default.(func() int64)
+	cityFields := schema.City{}.Fields()
+	_ = cityFields
+	// cityDescParentID is the schema descriptor for parent_id field.
+	cityDescParentID := cityFields[1].Descriptor()
+	// city.DefaultParentID holds the default value on creation for the parent_id field.
+	city.DefaultParentID = cityDescParentID.Default.(int64)
+	// cityDescTitle is the schema descriptor for title field.
+	cityDescTitle := cityFields[3].Descriptor()
+	// city.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	city.TitleValidator = cityDescTitle.Validators[0].(func(string) error)
+	// cityDescInitial is the schema descriptor for initial field.
+	cityDescInitial := cityFields[4].Descriptor()
+	// city.DefaultInitial holds the default value on creation for the initial field.
+	city.DefaultInitial = cityDescInitial.Default.(string)
+	// cityDescIsHot is the schema descriptor for is_hot field.
+	cityDescIsHot := cityFields[5].Descriptor()
+	// city.DefaultIsHot holds the default value on creation for the is_hot field.
+	city.DefaultIsHot = cityDescIsHot.Default.(bool)
+	// cityDescCreatedAt is the schema descriptor for created_at field.
+	cityDescCreatedAt := cityFields[6].Descriptor()
+	// city.DefaultCreatedAt holds the default value on creation for the created_at field.
+	city.DefaultCreatedAt = cityDescCreatedAt.Default.(func() time.Time)
+	// cityDescUpdatedAt is the schema descriptor for updated_at field.
+	cityDescUpdatedAt := cityFields[7].Descriptor()
+	// city.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	city.DefaultUpdatedAt = cityDescUpdatedAt.Default.(func() time.Time)
+	// city.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	city.UpdateDefaultUpdatedAt = cityDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// cityDescID is the schema descriptor for id field.
+	cityDescID := cityFields[0].Descriptor()
+	// city.DefaultID holds the default value on creation for the id field.
+	city.DefaultID = cityDescID.Default.(func() int64)
+	dictionaryFields := schema.Dictionary{}.Fields()
+	_ = dictionaryFields
+	// dictionaryDescTitle is the schema descriptor for title field.
+	dictionaryDescTitle := dictionaryFields[1].Descriptor()
+	// dictionary.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	dictionary.TitleValidator = dictionaryDescTitle.Validators[0].(func(string) error)
+	// dictionaryDescType is the schema descriptor for type field.
+	dictionaryDescType := dictionaryFields[2].Descriptor()
+	// dictionary.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	dictionary.TypeValidator = dictionaryDescType.Validators[0].(func(string) error)
+	// dictionaryDescOrder is the schema descriptor for order field.
+	dictionaryDescOrder := dictionaryFields[3].Descriptor()
+	// dictionary.DefaultOrder holds the default value on creation for the order field.
+	dictionary.DefaultOrder = dictionaryDescOrder.Default.(int)
+	// dictionaryDescCreatedAt is the schema descriptor for created_at field.
+	dictionaryDescCreatedAt := dictionaryFields[4].Descriptor()
+	// dictionary.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dictionary.DefaultCreatedAt = dictionaryDescCreatedAt.Default.(func() time.Time)
+	// dictionaryDescUpdatedAt is the schema descriptor for updated_at field.
+	dictionaryDescUpdatedAt := dictionaryFields[5].Descriptor()
+	// dictionary.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	dictionary.DefaultUpdatedAt = dictionaryDescUpdatedAt.Default.(func() time.Time)
+	// dictionary.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	dictionary.UpdateDefaultUpdatedAt = dictionaryDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// dictionaryDescID is the schema descriptor for id field.
+	dictionaryDescID := dictionaryFields[0].Descriptor()
+	// dictionary.DefaultID holds the default value on creation for the id field.
+	dictionary.DefaultID = dictionaryDescID.Default.(func() int64)
 	dimensionFields := schema.Dimension{}.Fields()
 	_ = dimensionFields
 	// dimensionDescTitle is the schema descriptor for title field.

@@ -1,0 +1,28 @@
+syntax = "v1"
+
+type (
+	DictionaryItem {
+		ID    int64  `json:"id"`
+		Title string `json:"title"`
+	}
+
+	// 根据类型获取字典请求
+	GetDictionaryByTypeReq {
+		Type string `form:"type"` // 字典类型
+	}
+
+	// 根据类型获取字典响应
+	GetDictionaryByTypeResp {
+		Items []DictionaryItem `json:"items"`
+	}
+)
+
+@server (
+	group:      dictionary
+	middleware: Auth
+)
+service cv2 {
+	@doc "根据类型获取字典"
+	@handler GetDictionaryByType
+	get /api/dictionary/by-type (GetDictionaryByTypeReq) returns (GetDictionaryByTypeResp)
+}

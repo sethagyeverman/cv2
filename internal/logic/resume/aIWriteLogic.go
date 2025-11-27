@@ -8,9 +8,12 @@ import (
 	"cv2/internal/infra/algorithm"
 	"cv2/internal/infra/ent/dimension"
 	"cv2/internal/infra/ent/module"
+	"cv2/internal/pkg/contextx"
+	"cv2/internal/pkg/errx"
 	"cv2/internal/svc"
 	"cv2/internal/types"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -34,6 +37,34 @@ func NewAIWriteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AIWriteLo
 // AIWrite 执行 AI 帮写，将结果写入 client channel
 func (l *AIWriteLogic) AIWrite(req *types.AIWriteReq, client chan<- string) error {
 	l.Infof("AI write started: resume_id=%d, module_id=%d", req.ResumeID, req.ModuleID)
+
+	// 从 context 获取用户ID和租户ID
+	userID, err := contextx.GetUserID(l.ctx)
+	if err != nil {
+		l.Errorf("get user id from context failed: %v", err)
+		return errx.Warp(http.StatusUnauthorized, err, "获取用户信息失败")
+	}
+
+	tenantID, err := contextx.GetTenantID(l.ctx)
+	if err != nil {
+		l.Errorf("get tenant id from context failed: %v", err)
+		return errx.Warp(http.StatusUnauthorized, err, "获取租户信息失败")
+	}
+
+	// 插入 AI 优化记录
+	record, err := l.svcCtx.Ent.AIRecord.Create().
+		SetUserID(userID).
+		SetTenantID(tenantID).
+		SetResumeID(req.ResumeID).
+		SetModuleID(req.ModuleID).
+		SetInfo(req.Info).
+		Save(l.ctx)
+	if err != nil {
+		l.Errorf("save ai record failed: %v", err)
+		// 记录失败不影响主流程，只记录日志
+	} else {
+		l.Infof("ai record saved: id=%d, user_id=%d, tenant_id=%s", record.ID, userID, tenantID)
+	}
 
 	// 构建带 [MASK] 的简历数据
 	resumeData, err := l.buildMaskedResume(req.ResumeID, req.ModuleID)
