@@ -9,3 +9,4 @@ info (
 import "position.api"
 import "resume.api"
 import "shiji.api"
+import "auth.api"

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	article "cv2/internal/handler/article"
+	auth "cv2/internal/handler/auth"
 	position "cv2/internal/handler/position"
 	resume "cv2/internal/handler/resume"
 	"cv2/internal/svc"
@@ -28,6 +29,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodGet,
 				Path:    "/api/article/list",
 				Handler: article.ListArticlesHandler(serverCtx),
+			},
+		},
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				// 用户登录
+				Method:  http.MethodPost,
+				Path:    "/api/auth/login",
+				Handler: auth.LoginHandler(serverCtx),
 			},
 		},
 	)

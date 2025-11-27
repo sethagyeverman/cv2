@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"cv2/internal/pkg/errx"
@@ -26,35 +27,6 @@ func NewClient(baseURL string) *Client {
 			Timeout: 30 * time.Second,
 		},
 	}
-}
-
-// ArticleListResponse 文章列表响应
-type ArticleListResponse struct {
-	Code  int       `json:"code"`
-	Msg   string    `json:"msg"`
-	Rows  []Article `json:"rows"`
-	Total int64     `json:"total"`
-}
-
-// ArticleDetailResponse 文章详情响应
-type ArticleDetailResponse struct {
-	Code int     `json:"code"`
-	Msg  string  `json:"msg"`
-	Data Article `json:"data"`
-}
-
-// Article 文章
-type Article struct {
-	ArticleId    int64  `json:"articleId,string"`
-	Title        string `json:"title"`
-	Subtitle     string `json:"subtitle"`
-	Content      string `json:"content"`
-	ThumbnailUrl string `json:"thumbnailUrl"`
-	Status       int    `json:"status,string"`
-	ViewCount    int    `json:"viewCount"`
-	PublishTime  string `json:"publishTime"`
-	CreateTime   string `json:"createTime"`
-	UpdateTime   string `json:"updateTime"`
 }
 
 // ListArticles 获取文章列表
@@ -139,4 +111,50 @@ func (c *Client) GetArticle(ctx context.Context, articleID int64) (*Article, err
 
 func formatInt64(n int64) string {
 	return fmt.Sprintf("%d", n)
+}
+
+// Login 用户登录
+// grantType: 授权类型, credentials: 凭证内容(JSON字符串)
+func (c *Client) Login(ctx context.Context, clientID, clientSecret, grantType, credentials string) (*LoginResponse, error) {
+	data := map[string]string{
+		"grant_type":    grantType,
+		"client_id":     clientID,
+		"client_secret": clientSecret,
+		"credentials":   credentials,
+	}
+
+	target := c.baseURL + "/prod-api/oauth2/token"
+
+	jsonStr, err := json.Marshal(data)
+	if err != nil {
+		return nil, errx.Warp(http.StatusInternalServerError, err, "构造请求失败")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, target, strings.NewReader(string(jsonStr)))
+	if err != nil {
+		return nil, errx.Warp(http.StatusInternalServerError, err, "构造请求失败")
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, errx.Warp(http.StatusBadGateway, err, "调用登录接口失败")
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errx.Warp(http.StatusInternalServerError, err, "读取响应失败")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errx.Newf(http.StatusBadGateway, "登录接口响应非200: %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	var result LoginResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, errx.Warp(http.StatusInternalServerError, err, "解析登录响应失败")
+	}
+
+	return &result, nil
 }

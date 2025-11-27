@@ -32,6 +32,12 @@ type Config struct {
 	Shiji struct {
 		BaseURL string // 世纪服务器地址
 	}
+	OAuth2 struct {
+		Shiji struct {
+			ClientID     string // OAuth2 客户端ID
+			ClientSecret string // OAuth2 客户端密钥
+		}
+	}
 	DefaultConfig struct {
 		DefaultCoverImage string // 默认封面图URL
 	}

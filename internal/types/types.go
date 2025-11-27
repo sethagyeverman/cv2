@@ -69,6 +69,16 @@ type ListArticlesResp struct {
 	Total int64     `json:"total"`
 }
 
+type LoginReq struct {
+	GrantType   string `json:"grant_type"`  // 授权类型
+	Credentials string `json:"credentials"` // 凭证信息(JSON字符串)
+}
+
+type LoginResp struct {
+	AccessToken string `json:"access_token"` // 授权令牌
+	ExpireIn    int64  `json:"expire_in"`    // 授权令牌有效期
+}
+
 type ModuleInfo struct {
 	ModuleID   int64                    `json:"module_id,string"` // 模块ID
 	Title      string                   `json:"title"`            // 模块标题
