@@ -122,6 +122,26 @@
 
 ---
 
+### 简历席位表
+
+**说明**：用于记录用户当前的简历席位数量
+
+**字段**：
+- `id` (int64, 雪花ID) - 主键
+- `user_id` (string) - 用户ID
+- `max_slots` (int32) - 最大席位数量
+- `created_at` (time) - 创建时间
+- `updated_at` (time) - 更新时间
+- `deleted_at` (time) - 删除时间（软删除）
+
+**关系**：
+- 一对一关联到用户
+
+**索引**：
+- `(user_id)`
+
+
+---
 ## Ent Schema 定义
 
 ### Schema 文件位置

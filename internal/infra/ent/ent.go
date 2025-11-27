@@ -9,6 +9,7 @@ import (
 	"cv2/internal/infra/ent/position"
 	"cv2/internal/infra/ent/resume"
 	"cv2/internal/infra/ent/resumescore"
+	"cv2/internal/infra/ent/resumeslot"
 	"errors"
 	"fmt"
 	"reflect"
@@ -82,6 +83,7 @@ func checkColumn(t, c string) error {
 			position.Table:    position.ValidColumn,
 			resume.Table:      resume.ValidColumn,
 			resumescore.Table: resumescore.ValidColumn,
+			resumeslot.Table:  resumeslot.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

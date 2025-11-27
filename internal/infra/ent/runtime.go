@@ -8,6 +8,7 @@ import (
 	"cv2/internal/infra/ent/position"
 	"cv2/internal/infra/ent/resume"
 	"cv2/internal/infra/ent/resumescore"
+	"cv2/internal/infra/ent/resumeslot"
 	"cv2/internal/infra/ent/schema"
 	"time"
 )
@@ -130,4 +131,28 @@ func init() {
 	resumescoreDescID := resumescoreFields[0].Descriptor()
 	// resumescore.DefaultID holds the default value on creation for the id field.
 	resumescore.DefaultID = resumescoreDescID.Default.(func() int64)
+	resumeslotFields := schema.ResumeSlot{}.Fields()
+	_ = resumeslotFields
+	// resumeslotDescUserID is the schema descriptor for user_id field.
+	resumeslotDescUserID := resumeslotFields[1].Descriptor()
+	// resumeslot.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	resumeslot.UserIDValidator = resumeslotDescUserID.Validators[0].(func(string) error)
+	// resumeslotDescMaxSlots is the schema descriptor for max_slots field.
+	resumeslotDescMaxSlots := resumeslotFields[2].Descriptor()
+	// resumeslot.DefaultMaxSlots holds the default value on creation for the max_slots field.
+	resumeslot.DefaultMaxSlots = resumeslotDescMaxSlots.Default.(int32)
+	// resumeslotDescCreatedAt is the schema descriptor for created_at field.
+	resumeslotDescCreatedAt := resumeslotFields[3].Descriptor()
+	// resumeslot.DefaultCreatedAt holds the default value on creation for the created_at field.
+	resumeslot.DefaultCreatedAt = resumeslotDescCreatedAt.Default.(func() time.Time)
+	// resumeslotDescUpdatedAt is the schema descriptor for updated_at field.
+	resumeslotDescUpdatedAt := resumeslotFields[4].Descriptor()
+	// resumeslot.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	resumeslot.DefaultUpdatedAt = resumeslotDescUpdatedAt.Default.(func() time.Time)
+	// resumeslot.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	resumeslot.UpdateDefaultUpdatedAt = resumeslotDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// resumeslotDescID is the schema descriptor for id field.
+	resumeslotDescID := resumeslotFields[0].Descriptor()
+	// resumeslot.DefaultID holds the default value on creation for the id field.
+	resumeslot.DefaultID = resumeslotDescID.Default.(func() int64)
 }

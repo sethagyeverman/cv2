@@ -8,8 +8,10 @@ import (
 
 	article "cv2/internal/handler/article"
 	auth "cv2/internal/handler/auth"
+	pay "cv2/internal/handler/pay"
 	position "cv2/internal/handler/position"
 	resume "cv2/internal/handler/resume"
+	slot "cv2/internal/handler/slot"
 	"cv2/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
@@ -42,6 +44,20 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: auth.LoginHandler(serverCtx),
 			},
 		},
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Auth},
+			[]rest.Route{
+				{
+					// 查询订单状态
+					Method:  http.MethodGet,
+					Path:    "/api/pay/slot/order/:order_id",
+					Handler: pay.GetSlotOrderHandler(serverCtx),
+				},
+			}...,
+		),
 	)
 
 	server.AddRoutes(
@@ -121,5 +137,30 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			}...,
 		),
 		rest.WithSSE(),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Auth},
+			[]rest.Route{
+				{
+					// 创建席位购买订单
+					Method:  http.MethodPost,
+					Path:    "/api/slot/order",
+					Handler: slot.CreateSlotOrderHandler(serverCtx),
+				},
+			}...,
+		),
+	)
+
+	server.AddRoutes(
+		[]rest.Route{
+			{
+				// 席位支付回调（供支付微服务调用）
+				Method:  http.MethodPost,
+				Path:    "/api/pay/slot/notify",
+				Handler: slot.SlotPayNotifyHandler(serverCtx),
+			},
+		},
 	)
 }

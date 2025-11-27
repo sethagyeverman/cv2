@@ -16,6 +16,7 @@ import (
 	"cv2/internal/infra/ent/position"
 	"cv2/internal/infra/ent/resume"
 	"cv2/internal/infra/ent/resumescore"
+	"cv2/internal/infra/ent/resumeslot"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
@@ -38,6 +39,8 @@ type Client struct {
 	Resume *ResumeClient
 	// ResumeScore is the client for interacting with the ResumeScore builders.
 	ResumeScore *ResumeScoreClient
+	// ResumeSlot is the client for interacting with the ResumeSlot builders.
+	ResumeSlot *ResumeSlotClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -54,6 +57,7 @@ func (c *Client) init() {
 	c.Position = NewPositionClient(c.config)
 	c.Resume = NewResumeClient(c.config)
 	c.ResumeScore = NewResumeScoreClient(c.config)
+	c.ResumeSlot = NewResumeSlotClient(c.config)
 }
 
 type (
@@ -151,6 +155,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Position:    NewPositionClient(cfg),
 		Resume:      NewResumeClient(cfg),
 		ResumeScore: NewResumeScoreClient(cfg),
+		ResumeSlot:  NewResumeSlotClient(cfg),
 	}, nil
 }
 
@@ -175,6 +180,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Position:    NewPositionClient(cfg),
 		Resume:      NewResumeClient(cfg),
 		ResumeScore: NewResumeScoreClient(cfg),
+		ResumeSlot:  NewResumeSlotClient(cfg),
 	}, nil
 }
 
@@ -203,21 +209,21 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Dimension.Use(hooks...)
-	c.Module.Use(hooks...)
-	c.Position.Use(hooks...)
-	c.Resume.Use(hooks...)
-	c.ResumeScore.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Dimension, c.Module, c.Position, c.Resume, c.ResumeScore, c.ResumeSlot,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Dimension.Intercept(interceptors...)
-	c.Module.Intercept(interceptors...)
-	c.Position.Intercept(interceptors...)
-	c.Resume.Intercept(interceptors...)
-	c.ResumeScore.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Dimension, c.Module, c.Position, c.Resume, c.ResumeScore, c.ResumeSlot,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -233,6 +239,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Resume.mutate(ctx, m)
 	case *ResumeScoreMutation:
 		return c.ResumeScore.mutate(ctx, m)
+	case *ResumeSlotMutation:
+		return c.ResumeSlot.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -999,12 +1007,145 @@ func (c *ResumeScoreClient) mutate(ctx context.Context, m *ResumeScoreMutation) 
 	}
 }
 
+// ResumeSlotClient is a client for the ResumeSlot schema.
+type ResumeSlotClient struct {
+	config
+}
+
+// NewResumeSlotClient returns a client for the ResumeSlot from the given config.
+func NewResumeSlotClient(c config) *ResumeSlotClient {
+	return &ResumeSlotClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `resumeslot.Hooks(f(g(h())))`.
+func (c *ResumeSlotClient) Use(hooks ...Hook) {
+	c.hooks.ResumeSlot = append(c.hooks.ResumeSlot, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `resumeslot.Intercept(f(g(h())))`.
+func (c *ResumeSlotClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ResumeSlot = append(c.inters.ResumeSlot, interceptors...)
+}
+
+// Create returns a builder for creating a ResumeSlot entity.
+func (c *ResumeSlotClient) Create() *ResumeSlotCreate {
+	mutation := newResumeSlotMutation(c.config, OpCreate)
+	return &ResumeSlotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ResumeSlot entities.
+func (c *ResumeSlotClient) CreateBulk(builders ...*ResumeSlotCreate) *ResumeSlotCreateBulk {
+	return &ResumeSlotCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ResumeSlotClient) MapCreateBulk(slice any, setFunc func(*ResumeSlotCreate, int)) *ResumeSlotCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ResumeSlotCreateBulk{err: fmt.Errorf("calling to ResumeSlotClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ResumeSlotCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ResumeSlotCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ResumeSlot.
+func (c *ResumeSlotClient) Update() *ResumeSlotUpdate {
+	mutation := newResumeSlotMutation(c.config, OpUpdate)
+	return &ResumeSlotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ResumeSlotClient) UpdateOne(_m *ResumeSlot) *ResumeSlotUpdateOne {
+	mutation := newResumeSlotMutation(c.config, OpUpdateOne, withResumeSlot(_m))
+	return &ResumeSlotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ResumeSlotClient) UpdateOneID(id int64) *ResumeSlotUpdateOne {
+	mutation := newResumeSlotMutation(c.config, OpUpdateOne, withResumeSlotID(id))
+	return &ResumeSlotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ResumeSlot.
+func (c *ResumeSlotClient) Delete() *ResumeSlotDelete {
+	mutation := newResumeSlotMutation(c.config, OpDelete)
+	return &ResumeSlotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ResumeSlotClient) DeleteOne(_m *ResumeSlot) *ResumeSlotDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ResumeSlotClient) DeleteOneID(id int64) *ResumeSlotDeleteOne {
+	builder := c.Delete().Where(resumeslot.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ResumeSlotDeleteOne{builder}
+}
+
+// Query returns a query builder for ResumeSlot.
+func (c *ResumeSlotClient) Query() *ResumeSlotQuery {
+	return &ResumeSlotQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeResumeSlot},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ResumeSlot entity by its id.
+func (c *ResumeSlotClient) Get(ctx context.Context, id int64) (*ResumeSlot, error) {
+	return c.Query().Where(resumeslot.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ResumeSlotClient) GetX(ctx context.Context, id int64) *ResumeSlot {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ResumeSlotClient) Hooks() []Hook {
+	return c.hooks.ResumeSlot
+}
+
+// Interceptors returns the client interceptors.
+func (c *ResumeSlotClient) Interceptors() []Interceptor {
+	return c.inters.ResumeSlot
+}
+
+func (c *ResumeSlotClient) mutate(ctx context.Context, m *ResumeSlotMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ResumeSlotCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ResumeSlotUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ResumeSlotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ResumeSlotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ResumeSlot mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Dimension, Module, Position, Resume, ResumeScore []ent.Hook
+		Dimension, Module, Position, Resume, ResumeScore, ResumeSlot []ent.Hook
 	}
 	inters struct {
-		Dimension, Module, Position, Resume, ResumeScore []ent.Interceptor
+		Dimension, Module, Position, Resume, ResumeScore, ResumeSlot []ent.Interceptor
 	}
 )

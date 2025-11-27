@@ -22,6 +22,17 @@ type Article struct {
 	UpdateTime   string `json:"updateTime,optional"`
 }
 
+type CreateSlotOrderReq struct {
+	Quantity int32 `json:"quantity"` // 购买数量
+}
+
+type CreateSlotOrderResp struct {
+	OrderID     string `json:"order_id"`     // 订单ID
+	CodeURL     string `json:"code_url"`     // 微信支付二维码内容
+	TotalAmount int64  `json:"total_amount"` // 总金额（分）
+	ExpireTime  string `json:"expire_time"`  // 过期时间
+}
+
 type DimensionInfo struct {
 	DimensionID int64   `json:"dimension_id,string"` // 维度ID
 	Title       string  `json:"title"`               // 维度标题
@@ -56,6 +67,19 @@ type GetResumeResp struct {
 	Modules    []ModuleInfo `json:"modules"`          // 模块列表（含数据和得分）
 	CreatedAt  string       `json:"created_at"`       // 创建时间
 	UpdatedAt  string       `json:"updated_at"`       // 更新时间
+}
+
+type GetSlotOrderReq struct {
+	OrderID string `path:"order_id"` // 订单ID
+}
+
+type GetSlotOrderResp struct {
+	OrderID     string `json:"order_id"`         // 订单ID
+	Status      string `json:"status"`           // 订单状态: pending/paid/expired/cancelled
+	Quantity    int32  `json:"quantity"`         // 购买数量
+	TotalAmount int64  `json:"total_amount"`     // 总金额（分）
+	PaidAt      string `json:"paid_at,optional"` // 支付时间
+	CreatedAt   string `json:"created_at"`       // 创建时间
 }
 
 type ListArticlesReq struct {
@@ -109,6 +133,21 @@ type SaveModuleResp struct {
 	Score      float64                  `json:"score"`            // 模块得分
 	Data       []map[string]interface{} `json:"data"`             // 模块数据
 	Dimensions []DimensionInfo          `json:"dimensions"`       // 维度得分列表
+}
+
+type SlotPayNotifyReq struct {
+	OrderID    string `json:"order_id"`     // 订单ID
+	OutTradeNo string `json:"out_trade_no"` // 微信支付订单号
+	UserID     string `json:"user_id"`      // 用户ID
+	Quantity   int32  `json:"quantity"`     // 购买数量
+	Status     string `json:"status"`       // 支付状态: paid
+	PaidAt     string `json:"paid_at"`      // 支付时间
+	Sign       string `json:"sign"`         // 签名
+}
+
+type SlotPayNotifyResp struct {
+	Success bool   `json:"success"` // 是否成功
+	Message string `json:"message"` // 消息
 }
 
 type TaskStatusReq struct {

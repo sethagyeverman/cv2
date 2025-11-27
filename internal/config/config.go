@@ -41,4 +41,10 @@ type Config struct {
 	DefaultConfig struct {
 		DefaultCoverImage string // 默认封面图URL
 	}
+	Pay struct {
+		ServiceURL         string // 支付微服务地址
+		BuySlotNotifyURL   string // 席位购买回调地址
+		NotifySecret       string // 回调签名密钥
+		OrderExpireMinutes int    // 订单超时时间（分钟）
+	}
 }

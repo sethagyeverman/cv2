@@ -20,3 +20,6 @@ type Resume func(*sql.Selector)
 
 // ResumeScore is the predicate function for resumescore builders.
 type ResumeScore func(*sql.Selector)
+
+// ResumeSlot is the predicate function for resumeslot builders.
+type ResumeSlot func(*sql.Selector)

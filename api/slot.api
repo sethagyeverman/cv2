@@ -1,0 +1,56 @@
+syntax = "v1"
+
+// ==================== 席位 ====================
+
+// 创建席位购买订单请求
+type CreateSlotOrderReq {
+	Quantity int32 `json:"quantity"` // 购买数量
+}
+
+// 创建席位购买订单响应
+type CreateSlotOrderResp {
+	OrderID     string `json:"order_id"`     // 订单ID
+	CodeURL     string `json:"code_url"`     // 微信支付二维码内容
+	TotalAmount int64  `json:"total_amount"` // 总金额（分）
+	ExpireTime  string `json:"expire_time"`  // 过期时间
+}
+
+
+// 支付回调请求（支付微服务调用）
+type SlotPayNotifyReq {
+	OrderID    string `json:"order_id"`    // 订单ID
+	OutTradeNo string `json:"out_trade_no"` // 微信支付订单号
+	UserID     string `json:"user_id"`     // 用户ID
+	Quantity   int32  `json:"quantity"`    // 购买数量
+	Status     string `json:"status"`      // 支付状态: paid
+	PaidAt     string `json:"paid_at"`     // 支付时间
+	Sign       string `json:"sign"`        // 签名
+}
+
+// 支付回调响应
+type SlotPayNotifyResp {
+	Success bool   `json:"success"` // 是否成功
+	Message string `json:"message"` // 消息
+}
+
+
+// ==================== 路由定义 ====================
+
+@server (
+	group:      slot
+	middleware: Auth
+)
+service cv2 {
+	@doc "创建席位购买订单"
+	@handler CreateSlotOrder
+	post /api/slot/order (CreateSlotOrderReq) returns (CreateSlotOrderResp)
+}
+
+@server (
+	group: slot
+)
+service cv2 {
+	@doc "席位支付回调（供支付微服务调用）"
+	@handler SlotPayNotify
+	post /api/pay/slot/notify (SlotPayNotifyReq) returns (SlotPayNotifyResp)
+}

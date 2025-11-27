@@ -6,6 +6,7 @@ import (
 	"cv2/internal/infra/ent"
 	"cv2/internal/infra/minio"
 	"cv2/internal/infra/mongo"
+	"cv2/internal/infra/payclient"
 	"cv2/internal/infra/shiji"
 	"cv2/internal/middleware"
 
@@ -22,6 +23,7 @@ type ServiceContext struct {
 	Redis     *redis.Client
 	Algorithm *algorithm.Client
 	Shiji     *shiji.Client
+	PayClient payclient.Client
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -51,6 +53,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		c.JWT.RefreshThreshold,
 	)
 
+	// 创建支付客户端（Mock）
+	payClient := payclient.NewMockClient()
+
 	return &ServiceContext{
 		Config:    c,
 		Auth:      authMiddleware.Handle,
@@ -60,5 +65,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Redis:     redisClient,
 		Algorithm: algClient,
 		Shiji:     shijiClient,
+		PayClient: payClient,
 	}
 }

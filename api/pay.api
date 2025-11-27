@@ -1,0 +1,28 @@
+syntax = "v1"
+
+// 查询订单状态请求
+type GetSlotOrderReq {
+	OrderID string `path:"order_id"` // 订单ID
+}
+
+// 查询订单状态响应
+type GetSlotOrderResp {
+	OrderID     string `json:"order_id"`     // 订单ID
+	Status      string `json:"status"`       // 订单状态: pending/paid/expired/cancelled
+	Quantity    int32  `json:"quantity"`     // 购买数量
+	TotalAmount int64  `json:"total_amount"` // 总金额（分）
+	PaidAt      string `json:"paid_at,optional"` // 支付时间
+	CreatedAt   string `json:"created_at"`   // 创建时间
+}
+
+
+@server (
+	group:      pay
+	middleware: Auth
+)
+service cv2 {
+	@doc "查询订单状态"
+	@handler GetSlotOrder
+	get /api/pay/slot/order/:order_id (GetSlotOrderReq) returns (GetSlotOrderResp)
+}
+

@@ -146,6 +146,28 @@ var (
 			},
 		},
 	}
+	// CvResumeSlotColumns holds the columns for the "cv_resume_slot" table.
+	CvResumeSlotColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true, Comment: "主键ID"},
+		{Name: "user_id", Type: field.TypeString, Comment: "用户ID"},
+		{Name: "max_slots", Type: field.TypeInt32, Comment: "最大席位数量", Default: 0},
+		{Name: "created_at", Type: field.TypeTime, Comment: "创建时间"},
+		{Name: "updated_at", Type: field.TypeTime, Comment: "更新时间"},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true, Comment: "删除时间"},
+	}
+	// CvResumeSlotTable holds the schema information for the "cv_resume_slot" table.
+	CvResumeSlotTable = &schema.Table{
+		Name:       "cv_resume_slot",
+		Columns:    CvResumeSlotColumns,
+		PrimaryKey: []*schema.Column{CvResumeSlotColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "resumeslot_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{CvResumeSlotColumns[1]},
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CvDimensionTable,
@@ -153,6 +175,7 @@ var (
 		RmPositionTable,
 		CvResumeTable,
 		CvResumeScoreTable,
+		CvResumeSlotTable,
 	}
 )
 
@@ -182,6 +205,11 @@ func init() {
 	CvResumeScoreTable.ForeignKeys[0].RefTable = CvResumeTable
 	CvResumeScoreTable.Annotation = &entsql.Annotation{
 		Table:     "cv_resume_score",
+		Charset:   "utf8mb4",
+		Collation: "utf8mb4_unicode_ci",
+	}
+	CvResumeSlotTable.Annotation = &entsql.Annotation{
+		Table:     "cv_resume_slot",
 		Charset:   "utf8mb4",
 		Collation: "utf8mb4_unicode_ci",
 	}

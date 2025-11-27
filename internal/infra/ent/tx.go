@@ -22,6 +22,8 @@ type Tx struct {
 	Resume *ResumeClient
 	// ResumeScore is the client for interacting with the ResumeScore builders.
 	ResumeScore *ResumeScoreClient
+	// ResumeSlot is the client for interacting with the ResumeSlot builders.
+	ResumeSlot *ResumeSlotClient
 
 	// lazily loaded.
 	client     *Client
@@ -158,6 +160,7 @@ func (tx *Tx) init() {
 	tx.Position = NewPositionClient(tx.config)
 	tx.Resume = NewResumeClient(tx.config)
 	tx.ResumeScore = NewResumeScoreClient(tx.config)
+	tx.ResumeSlot = NewResumeSlotClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

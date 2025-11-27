@@ -38,8 +38,14 @@ Shiji:
 
 OAuth2:
   Shiji:
-    ClientID: your-client-id
-    ClientSecret: your-client-secret
+    ClientID: 948aff0e6bf523463dfb4b4bb0e206c8
+    ClientSecret: 5438d607ff4f4bd49d8b04e3c6a3a3c3
 
 DefaultConfig:
   DefaultCoverImage: http://119.45.61.170:9000/cvmaster/dev/thumbnail/2025/11/1911355638029037562/bcd95ca7-6331-45f2-ba73-7f4062b4ba91_c7a10f05.png
+
+Pay:
+  ServiceURL: http://your-pay-service:8080
+  BuySlotNotifyURL: http://your-cv2-service:8888/api/pay/slot/notify
+  NotifySecret: your-notify-secret-key
+  OrderExpireMinutes: 30
