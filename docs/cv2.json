@@ -87,6 +87,34 @@
         ]
       }
     },
+    "/api/auth/login": {
+      "post": {
+        "summary": "用户登录",
+        "operationId": "Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/LoginResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": " 登录请求",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginReq"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/positions/options": {
       "get": {
         "summary": "Position options",
@@ -208,6 +236,23 @@
             "type": "string"
           }
         ],
+        "tags": [
+          "resume"
+        ]
+      }
+    },
+    "/api/resume/upload": {
+      "post": {
+        "summary": "上传简历文件解析",
+        "operationId": "UploadResume",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/UploadResumeResp"
+            }
+          }
+        },
         "tags": [
           "resume"
         ]
@@ -558,6 +603,43 @@
         "total"
       ]
     },
+    "LoginReq": {
+      "type": "object",
+      "properties": {
+        "grant_type": {
+          "type": "string",
+          "description": " 授权类型"
+        },
+        "credentials": {
+          "type": "string",
+          "description": " 凭证信息(JSON字符串)"
+        }
+      },
+      "title": "LoginReq",
+      "required": [
+        "grant_type",
+        "credentials"
+      ]
+    },
+    "LoginResp": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": " 授权令牌"
+        },
+        "expire_in": {
+          "type": "integer",
+          "format": "int64",
+          "description": " 授权令牌有效期"
+        }
+      },
+      "title": "LoginResp",
+      "required": [
+        "access_token",
+        "expire_in"
+      ]
+    },
     "ModuleInfo": {
       "type": "object",
       "properties": {
@@ -804,6 +886,19 @@
         "upload_url",
         "object_key",
         "expires_in"
+      ]
+    },
+    "UploadResumeResp": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "description": " 任务ID（用于查询解析状态）"
+        }
+      },
+      "title": "UploadResumeResp",
+      "required": [
+        "task_id"
       ]
     }
   },

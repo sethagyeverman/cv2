@@ -18,6 +18,12 @@ run:
 build:
 	go build -o bin/cv2 .
 
+.PHONY: git
+git:
+	git add .
+	git commit -m "$(m)"
+	git push origin main
+
 .PHONY: help
 help:
 	@echo "Available targets:"

@@ -87,6 +87,12 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: resume.GetTaskStatusHandler(serverCtx),
 				},
 				{
+					// 上传简历文件解析
+					Method:  http.MethodPost,
+					Path:    "/api/resume/upload",
+					Handler: resume.UploadResumeHandler(serverCtx),
+				},
+				{
 					// 获取简历上传 POST Policy
 					Method:  http.MethodPost,
 					Path:    "/api/resume/upload/policy",

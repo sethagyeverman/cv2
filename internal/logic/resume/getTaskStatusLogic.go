@@ -32,7 +32,7 @@ func NewGetTaskStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 
 func (l *GetTaskStatusLogic) GetTaskStatus(req *types.TaskStatusReq) (resp *types.TaskStatusResp, err error) {
 	taskID := req.TaskID
-	key := genTaskKeyPrefix + taskID
+	key := resumeTaskKeyPrefix + taskID
 
 	// 从 Redis 获取任务状态
 	result, err := l.svcCtx.Redis.HGetAll(l.ctx, key).Result()

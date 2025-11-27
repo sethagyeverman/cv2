@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -27,9 +28,14 @@ func NewClient(generateURL, dataURL, scoreURL string) *Client {
 		dataURL:     dataURL,
 		scoreURL:    scoreURL,
 		httpClient: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: 3 * time.Minute, // 文件转换可能较慢
 		},
 	}
+}
+
+// DataURL 获取数据服务 URL
+func (c *Client) DataURL() string {
+	return c.dataURL
 }
 
 // SubmitGenerateTask 提交简历生成任务
@@ -231,4 +237,161 @@ func (c *Client) AIWrite(ctx context.Context, req *AIWriteRequest) (<-chan strin
 	}()
 
 	return dataCh, errCh
+}
+
+// File2Markdown 文件转 Markdown (pdf/doc/docx → markdown)
+func (c *Client) File2Markdown(ctx context.Context, fileHeader *multipart.FileHeader) (string, error) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return "", fmt.Errorf("open file: %w", err)
+	}
+	defer file.Close()
+
+	formFile, err := writer.CreateFormFile("file", fileHeader.Filename)
+	if err != nil {
+		return "", fmt.Errorf("create form file: %w", err)
+	}
+
+	if _, err := io.Copy(formFile, file); err != nil {
+		return "", fmt.Errorf("copy file: %w", err)
+	}
+
+	if err := writer.Close(); err != nil {
+		return "", fmt.Errorf("close writer: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		c.dataURL+"/convert/file_to_markdown", body)
+	if err != nil {
+		return "", fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var result struct {
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("decode response: %w", err)
+	}
+
+	return result.Content, nil
+}
+
+// Markdown2Struct Markdown 转结构化数据
+func (c *Client) Markdown2Struct(ctx context.Context, md string) (*ResumeData, error) {
+	reqBody, _ := json.Marshal(map[string]string{"content": md})
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		c.dataURL+"/extractor/resume_struct", bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var result struct {
+		ResumeData *ResumeData `json:"resume_data"`
+		Success    bool        `json:"success"`
+	}
+	if err := json.Unmarshal(respBody, &result); err != nil {
+		return nil, fmt.Errorf("decode response: %w", err)
+	}
+
+	if !result.Success {
+		return nil, fmt.Errorf("简历解析失败，请检查文件格式")
+	}
+
+	return result.ResumeData, nil
+}
+
+// Struct2Markdown 结构化数据转 Markdown
+func (c *Client) Struct2Markdown(ctx context.Context, data *ResumeData, title string) (string, error) {
+	reqBody, _ := json.Marshal(map[string]any{
+		"json_input": data,
+		"title":      title,
+	})
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		c.dataURL+"/convert/json_to_markdown", bytes.NewReader(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	var result struct {
+		Message         string `json:"message"`
+		MarkdownContent string `json:"markdown_content"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("decode response: %w", err)
+	}
+
+	return result.MarkdownContent, nil
+}
+
+// Markdown2PDF Markdown 转 PDF，返回 PDF 文件内容
+func (c *Client) Markdown2PDF(ctx context.Context, mdContent, filename string) ([]byte, error) {
+	reqBody, _ := json.Marshal(map[string]string{
+		"markdown_content": mdContent,
+		"filename":         filename,
+	})
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		c.dataURL+"/convert/markdown_to_pdf", bytes.NewReader(reqBody))
+	if err != nil {
+		return nil, fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	return io.ReadAll(resp.Body)
 }

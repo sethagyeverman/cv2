@@ -1,7 +1,11 @@
 package minio
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"mime/multipart"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -93,4 +97,72 @@ func (c *Client) GetPresignedPostPolicy(ctx context.Context, objectName string, 
 // BucketName 获取 bucket 名称
 func (c *Client) BucketName() string {
 	return c.bucketName
+}
+
+// Endpoint 获取 endpoint
+func (c *Client) Endpoint() string {
+	return c.client.EndpointURL().String()
+}
+
+// Upload 上传文件
+func (c *Client) Upload(ctx context.Context, objectName string, fileHeader *multipart.FileHeader) error {
+	file, err := fileHeader.Open()
+	if err != nil {
+		return fmt.Errorf("open file: %w", err)
+	}
+	defer file.Close()
+
+	_, err = c.client.PutObject(ctx, c.bucketName, objectName, file, fileHeader.Size, minio.PutObjectOptions{
+		ContentType: getContentType(fileHeader.Filename),
+	})
+	return err
+}
+
+// UploadBytes 上传字节数据
+func (c *Client) UploadBytes(ctx context.Context, objectName string, data []byte, contentType string) error {
+	reader := bytes.NewReader(data)
+	_, err := c.client.PutObject(ctx, c.bucketName, objectName, reader, int64(len(data)), minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	return err
+}
+
+// UploadReader 上传 Reader
+func (c *Client) UploadReader(ctx context.Context, objectName string, reader io.Reader, size int64, contentType string) error {
+	_, err := c.client.PutObject(ctx, c.bucketName, objectName, reader, size, minio.PutObjectOptions{
+		ContentType: contentType,
+	})
+	return err
+}
+
+// GetPublicURL 获取公开访问 URL（需要 bucket 设置为公开或使用预签名）
+func (c *Client) GetPublicURL(objectName string) string {
+	return fmt.Sprintf("%s/%s/%s", c.client.EndpointURL().String(), c.bucketName, objectName)
+}
+
+// getContentType 根据文件名获取 Content-Type
+func getContentType(filename string) string {
+	switch {
+	case len(filename) > 4 && filename[len(filename)-4:] == ".pdf":
+		return "application/pdf"
+	case len(filename) > 4 && filename[len(filename)-4:] == ".doc":
+		return "application/msword"
+	case len(filename) > 5 && filename[len(filename)-5:] == ".docx":
+		return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	case len(filename) > 4 && filename[len(filename)-4:] == ".png":
+		return "image/png"
+	case len(filename) > 4 && filename[len(filename)-4:] == ".jpg":
+		return "image/jpeg"
+	case len(filename) > 5 && filename[len(filename)-5:] == ".jpeg":
+		return "image/jpeg"
+	default:
+		return "application/octet-stream"
+	}
+}
+
+// GenerateObjectKey 生成 MinIO object key
+func GenerateObjectKey(filename string) string {
+	now := time.Now()
+	return fmt.Sprintf("%d/%02d/%02d/%s",
+		now.Year(), now.Month(), now.Day(), filename)
 }

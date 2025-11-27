@@ -1,6 +1,7 @@
 Name: cv2
 Host: 0.0.0.0
 Port: 8888
+MaxBytes: 20971520
 
 Prometheus:
   Host: 0.0.0.0

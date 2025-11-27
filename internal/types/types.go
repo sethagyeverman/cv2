@@ -140,3 +140,7 @@ type UploadPresignResp struct {
 	ObjectKey string `json:"object_key"` // 对象键（文件路径）
 	ExpiresIn int64  `json:"expires_in"` // 过期时间（秒）
 }
+
+type UploadResumeResp struct {
+	TaskID string `json:"task_id"` // 任务ID（用于查询解析状态）
+}
